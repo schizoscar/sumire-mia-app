@@ -1,0 +1,404 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="mb-0" style="font-size: 1.8rem;">> calendar</h1>
+            <a href="{{ url_for('calendar.add') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> new event
+            </a>
+        </div>
+        
+        <div class="calendar-container">
+            <div class="card">
+                <div class="card-body">
+                    <div id="calendar" style="min-height: 500px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- FullCalendar CSS -->
+<link href='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.css' rel='stylesheet' />
+
+<!-- FullCalendar JS -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@5.11.3/main.min.js'></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        var calendarEl = document.getElementById('calendar');
+
+        // Set color based on user preference
+        var eventColor = '{{ "#e6e6fa" if current_user.color_scheme == "purple" else "#ffdab9" }}';
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+            initialView: 'dayGridMonth',
+            headerToolbar: {
+                left: 'prev,next today',
+                center: 'title',
+                right: 'dayGridMonth,timeGridWeek,timeGridDay'
+            },
+            themeSystem: 'standard',
+            events: {
+                url: '/calendar/api/events',
+                failure: function (error) {
+                    console.error('Error loading events:', error);
+                    alert('Failed to load events. Please refresh the page.');
+                },
+                success: function (data) {
+                    console.log('Events loaded:', data);
+                }
+            },
+            eventColor: eventColor,
+            eventTextColor: '#4a4a4a',
+            height: 'auto',
+            slotMinTime: '08:00:00',
+            slotMaxTime: '22:00:00',
+
+            // Handle event click
+            eventClick: function (info) {
+                // Show a custom dialog instead of immediate delete
+                showEventDialog(info.event);
+            },
+
+            // Add event display callback
+            eventDidMount: function (info) {
+                // Set data attributes for styling
+                if (info.event.extendedProps.event_type === 'joined') {
+                    info.el.setAttribute('data-type', 'joined');
+                } else {
+                    info.el.setAttribute('data-type', 'solo');
+                    const color = info.event.extendedProps.color || '{{ current_user.color_scheme }}';
+                    info.el.setAttribute('data-color', color);
+                }
+
+                // Remove any FullCalendar event classes that might add extra styling
+                info.el.classList.remove('fc-h-event', 'fc-v-event', 'fc-daygrid-event');
+
+                console.log('Event mounted:', info.event.title, 'Type:', info.el.getAttribute('data-type'), 'Color:', info.el.getAttribute('data-color'));
+            },
+
+            buttonText: {
+                today: 'today',
+                month: 'month',
+                week: 'week',
+                day: 'day'
+            }
+        });
+
+        calendar.render();
+        console.log('Calendar rendered');
+    });
+
+    // Custom event dialog function (defined outside calendar initialization)
+    function showEventDialog(event) {
+        // Create modal HTML
+        const modalHtml = `
+            <div class="modal fade" id="eventModal" tabindex="-1">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content" style="border-radius: 24px; background: white;">
+                        <div class="modal-header" style="border-bottom: 2px solid var(--pastel-lavender);">
+                            <h5 class="modal-title" style="color: var(--charcoal);">${event.title}</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                        </div>
+                        <div class="modal-body" style="padding: 20px;">
+                            ${event.extendedProps.description ? `<p style="color: var(--warm-gray); margin-bottom: 15px;">${event.extendedProps.description}</p>` : ''}
+                            <p style="color: var(--charcoal); margin-bottom: 5px;">
+                                <i class="bi bi-calendar me-2" style="color: var(--pastel-lavender);"></i>
+                                Start: ${new Date(event.start).toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        })}
+                            </p>
+                            <p style="color: var(--charcoal); margin-bottom: 5px;">
+                                <i class="bi bi-calendar me-2" style="color: var(--peachy-pink);"></i>
+                                End: ${new Date(event.end).toLocaleString('en-GB', {
+            day: '2-digit',
+            month: '2-digit',
+            year: '2-digit',
+            hour: '2-digit',
+            minute: '2-digit'
+        })}
+                            </p>
+                            ${event.extendedProps.event_type === 'joined' ?
+                `<p style="color: var(--charcoal); margin-top: 10px;">
+                                    <i class="bi bi-person-fill me-2" style="color: var(--joined-red);"></i>
+                                    Joined event
+                                </p>` :
+                `<p style="color: var(--charcoal); margin-top: 10px;">
+                                    <i class="bi bi-person me-2" style="color: ${event.extendedProps.color === 'purple' ? '#c084fc' : '#f9a8d4'};"></i>
+                                    Solo event
+                                </p>`
+            }
+                        </div>
+                        <div class="modal-footer" style="border-top: 2px solid var(--pastel-lavender);">
+                            <a href="/calendar/edit/${event.id}" class="btn btn-primary">
+                                <i class="bi bi-pencil"></i> edit
+                            </a>
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete(${event.id})">
+                                <i class="bi bi-trash"></i> delete
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        // Remove existing modal if any
+        const existingModal = document.getElementById('eventModal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        // Add modal to body
+        document.body.insertAdjacentHTML('beforeend', modalHtml);
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('eventModal'));
+        modal.show();
+
+        // Remove modal from DOM when hidden
+        document.getElementById('eventModal').addEventListener('hidden.bs.modal', function () {
+            this.remove();
+        });
+    }
+
+    // Global delete confirmation function
+    window.confirmDelete = function (eventId) {
+        if (confirm('Delete this event?')) {
+            window.location.href = '/calendar/delete/' + eventId;
+        }
+    };
+</script>
+
+<style>
+/* Calendar customizations */
+.fc {
+    background: white;
+    color: var(--charcoal);
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--border-radius-card);
+    padding: 20px;
+}
+
+.fc-toolbar-title {
+    color: var(--charcoal) !important;
+    text-transform: lowercase;
+    font-size: 1.5rem !important;
+}
+
+.fc-button-primary {
+    background: white !important;
+    border: 1px solid var(--pastel-lavender) !important;
+    color: var(--charcoal) !important;
+    border-radius: var(--border-radius-button) !important;
+    text-transform: lowercase !important;
+    box-shadow: none !important;
+}
+
+.fc-button-primary:hover {
+    background: var(--pastel-lavender) !important;
+    border-color: var(--soft-lavender) !important;
+}
+
+.fc-day {
+    background: white !important;
+}
+
+.fc-day-today {
+    background: rgba(230, 230, 250, 0.3) !important;
+}
+
+/* COMPLETELY RESET FULLCALENDAR EVENT STYLING */
+.fc-event,
+.fc-h-event,
+.fc-v-event,
+.fc-daygrid-event,
+.fc-timegrid-event {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+}
+
+/* Remove FullCalendar's default dot */
+.fc-event .fc-event-main::before,
+.fc-event .fc-event-title::before,
+.fc-event .fc-event-time::before {
+    display: none !important;
+    content: none !important;
+}
+
+/* Remove any background images */
+.fc-event:after,
+.fc-event:before,
+.fc-event-main:after,
+.fc-event-main:before {
+    display: none !important;
+}
+
+/* Your custom event styling */
+.fc-event {
+    cursor: pointer;
+    padding: 4px 8px !important;
+    margin: 2px 4px !important;
+    border-radius: 8px !important;
+    font-size: 0.85rem !important;
+    font-weight: 500 !important;
+    transition: all 0.2s ease !important;
+    display: flex !important;
+    align-items: center !important;
+    position: relative !important;
+}
+
+/* Your custom dot - this is the ONLY dot */
+.fc-event .fc-event-main {
+    display: flex !important;
+    align-items: center !important;
+    width: 100% !important;
+    background: transparent !important;
+    padding: 0 !important;
+}
+
+.fc-event .fc-event-main::before {
+    content: '' !important;
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    margin-right: 6px !important;
+    flex-shrink: 0 !important;
+    background: currentColor;
+}
+
+.fc-event[data-type="solo"][data-color="purple"] .fc-event-main::before {
+    background: #c084fc !important;
+    box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.3) !important;
+}
+
+.fc-event[data-type="solo"][data-color="pink"] .fc-event-main::before {
+    background: #f9a8d4 !important;
+    box-shadow: 0 0 0 2px rgba(249, 168, 212, 0.3) !important;
+}
+
+.fc-event[data-type="joined"] .fc-event-main::before {
+    background: #ef4444 !important;
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3) !important;
+}
+
+/* Event background colors */
+.fc-event[data-type="solo"][data-color="purple"] {
+    background: #e6e6fa !important;
+    border-left: 3px solid #c084fc !important;
+}
+
+.fc-event[data-type="solo"][data-color="pink"] {
+    background: #ffdab9 !important;
+    border-left: 3px solid #f9a8d4 !important;
+}
+
+.fc-event[data-type="joined"] {
+    background: #ffb6b6 !important;
+    border-left: 3px solid #f87171 !important;
+}
+
+.fc-event:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1) !important;
+}
+
+.fc-event-title {
+    font-weight: 500 !important;
+    color: #4a4a4a !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.fc-event-time {
+    color: #4a4a4a !important;
+    opacity: 0.8 !important;
+    margin-right: 4px !important;
+    white-space: nowrap !important;
+}
+
+.fc-day-header {
+    background: rgba(230, 230, 250, 0.3) !important;
+    padding: 10px 0 !important;
+    font-weight: 500 !important;
+    color: var(--charcoal) !important;
+    text-transform: lowercase !important;
+}
+
+.fc-daygrid-day-number {
+    color: var(--charcoal) !important;
+}
+
+/* Modal styling */
+.modal-content {
+    border: 2px solid var(--pastel-lavender);
+    border-radius: 24px !important;
+}
+
+.modal-header {
+    border-bottom: 2px solid var(--pastel-lavender);
+    background: white;
+    border-radius: 24px 24px 0 0;
+}
+
+.modal-footer {
+    border-top: 2px solid var(--pastel-lavender);
+    background: white;
+    border-radius: 0 0 24px 24px;
+}
+
+.btn-secondary {
+    background: white;
+    border: 2px solid var(--warm-gray);
+    color: var(--charcoal);
+}
+
+.btn-secondary:hover {
+    background: var(--warm-gray);
+    color: white;
+}
+
+/* Calendar container */
+.calendar-container {
+    background: white;
+    border-radius: 24px;
+    padding: 20px;
+    box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
+}
+
+/* Force events to show */
+.fc-daygrid-event {
+    display: flex !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.fc-daygrid-event-harness {
+    margin-bottom: 2px !important;
+}
+
+/* Remove any remaining cyberpunk theme leftovers */
+.glitch {
+    text-transform: lowercase !important;
+}
+
+.glitch::before,
+.glitch::after {
+    display: none;
+}
+</style>
+{% endblock %}

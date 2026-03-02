@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card auth-card">
+            <div class="card-header">
+                <h4 class="mb-0 glitch" data-text="> EDIT EVENT">
+                    > EDIT EVENT
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('calendar.edit', event_id=event.id) }}" id="eventForm">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">> EVENT_TITLE</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ event.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">> DESCRIPTION</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ event.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">> START_TIME</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control datetime-picker" id="start_date" name="start_date" 
+                                       placeholder="Click to select date" 
+                                       value="{{ formatted_start }}" required readonly>
+                                <span class="input-group-text date-icon" style="background: transparent; border: 1px solid var(--neon-purple); cursor: pointer;" onclick="$('#start_date').datepicker('show');">
+                                    <i class="bi bi-calendar3" style="color: var(--neon-purple);"></i>
+                                </span>
+                            </div>
+                            <small class="form-text text-date-example">Selected: <span id="start_display">{{ formatted_start or 'Not set' }}</span></small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">> END_TIME</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control datetime-picker" id="end_date" name="end_date" 
+                                       placeholder="Click to select date" 
+                                       value="{{ formatted_end }}" required readonly>
+                                <span class="input-group-text date-icon" style="background: transparent; border: 1px solid var(--neon-pink); cursor: pointer;" onclick="$('#end_date').datepicker('show');">
+                                    <i class="bi bi-calendar3" style="color: var(--neon-pink);"></i>
+                                </span>
+                            </div>
+                            <small class="form-text text-date-example">Selected: <span id="end_display">{{ formatted_end or 'Not set' }}</span></small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="copy_end" checked>
+                        <label class="form-check-label" for="copy_end">AUTO_COPY START TO END</label>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            > UPDATE_EVENT
+                        </button>
+                        <a href="{{ url_for('calendar.index') }}" class="btn btn-danger">
+                            > CANCEL
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add JavaScript for datetime handling -->
+<script>
+    $(document).ready(function () {
+        // Initialize datetime pickers
+        $('.datetime-picker').datepicker({
+            format: 'dd/mm/yy',
+            autoclose: true,
+            todayHighlight: true,
+            startDate: '0d',
+            orientation: 'bottom auto',
+            templates: {
+                leftArrow: '<i class="bi bi-chevron-left"></i>',
+                rightArrow: '<i class="bi bi-chevron-right"></i>'
+            },
+            language: 'en'
+        }).on('changeDate', function (e) {
+            const selectedDate = e.date;
+            const currentVal = $(this).val();
+            const currentTime = currentVal ? currentVal.split(' ')[1] : '02:30 PM';
+            const formattedDate = formatDateWithTime(selectedDate, currentTime);
+
+            $(this).val(formattedDate);
+
+            const id = $(this).attr('id');
+            $('#' + id + '_display').text(formattedDate);
+
+            if (id === 'start_date' && $('#copy_end').is(':checked')) {
+                $('#end_date').val(formattedDate);
+                $('#end_display').text(formattedDate);
+                $('#end_date').next('.time-select').val($(this).next('.time-select').val());
+            }
+        });
+
+        function formatDateWithTime(date, time = '02:30 PM') {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = String(date.getFullYear()).slice(-2);
+            return `${day}/${month}/${year} ${time}`;
+        }
+
+        // Time picker
+        function addTimePicker(inputId, selectedTime) {
+            const timeOptions = ['12:00 AM', '01:00 AM', '02:00 AM', '03:00 AM', '04:00 AM', '05:00 AM',
+                '06:00 AM', '07:00 AM', '08:00 AM', '09:00 AM', '10:00 AM', '11:00 AM',
+                '12:00 PM', '01:00 PM', '02:00 PM', '03:00 PM', '04:00 PM', '05:00 PM',
+                '06:00 PM', '07:00 PM', '08:00 PM', '09:00 PM', '10:00 PM', '11:00 PM'];
+
+            const timeSelect = $(`
+            <select class="form-control time-select mt-2" style="background: rgba(10,10,15,0.9); color: var(--neon-green); border: 1px solid var(--neon-purple);">
+                ${timeOptions.map(time => `<option value="${time}" ${time === selectedTime ? 'selected' : ''}>${time}</option>`).join('')}
+            </select>
+        `);
+
+            $(inputId).after(timeSelect);
+
+            timeSelect.on('change', function () {
+                const currentVal = $(inputId).val();
+                if (currentVal) {
+                    const datePart = currentVal.split(' ')[0];
+                    $(inputId).val(datePart + ' ' + $(this).val());
+                    $(inputId + '_display').text(datePart + ' ' + $(this).val());
+                }
+            });
+        }
+
+        // Get initial times
+        const startTime = $('#start_date').val() ? $('#start_date').val().split(' ')[1] : '02:30 PM';
+        const endTime = $('#end_date').val() ? $('#end_date').val().split(' ')[1] : '03:30 PM';
+
+        addTimePicker('#start_date', startTime);
+        addTimePicker('#end_date', endTime);
+
+        // Auto-copy logic
+        $('#start_date').on('change', function () {
+            if ($('#copy_end').is(':checked')) {
+                $('#end_date').val($(this).val());
+                $('#end_display').text($(this).val());
+                $('#end_date').next('.time-select').val($(this).next('.time-select').val());
+            }
+        });
+
+        $('#copy_end').on('change', function () {
+            if ($(this).is(':checked') && $('#start_date').val()) {
+                $('#end_date').val($('#start_date').val());
+                $('#end_display').text($('#start_date').val());
+                $('#end_date').next('.time-select').val($('#start_date').next('.time-select').val());
+            }
+        });
+    });
+</script>
+
+<style>
+/* Copy the same styles from add.html */
+.datetime-picker {
+    cursor: pointer;
+}
+
+.text-date-example {
+    color: var(--neon-green) !important;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    opacity: 1;
+    text-shadow: 0 0 5px var(--neon-green);
+    margin-top: 5px;
+}
+
+#start_display, #end_display {
+    color: var(--neon-pink) !important;
+    font-weight: bold;
+    text-shadow: 0 0 5px var(--neon-pink);
+}
+
+.time-select {
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    border-radius: 0;
+}
+
+.time-select option {
+    background: var(--darker-bg);
+    color: var(--text-primary);
+}
+
+.date-icon:hover {
+    background: rgba(184, 41, 255, 0.3) !important;
+}
+
+.form-check-input {
+    background-color: transparent;
+    border-color: var(--neon-purple);
+    cursor: pointer;
+}
+
+.form-check-input:checked {
+    background-color: var(--neon-purple);
+    border-color: var(--neon-purple);
+}
+
+.form-check-label {
+    color: var(--neon-green);
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,366 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1 class="glitch" data-text="> USER MANAGEMENT">
+                > USER MANAGEMENT
+            </h1>
+            <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary">
+                <i class="bi bi-person-plus"></i> ADD USER
+            </a>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0 glitch" data-text="> SYSTEM_USERS">
+                    > SYSTEM_USERS
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>USERNAME</th>
+                                <th>EMAIL</th>
+                                <th>COLOR</th>
+                                <th>ROLE</th>
+                                <th>STATUS</th>
+                                <th>CREATED</th>
+                                <th>ACTIONS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr class="user-row {% if user.color_scheme == 'purple' %}purple-user{% else %}pink-user{% endif %}">
+                                <td>#{{ user.id }}</td>
+                                <td>
+                                    <i class="bi bi-person-circle me-2"></i>
+                                    {{ user.username }}
+                                    {% if user.id == current_user.id %}
+                                    <span class="badge" style="background: var(--neon-green); color: var(--dark-bg); margin-left: 5px;">YOU</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>
+                                    <span class="color-badge" style="background: {% if user.color_scheme == 'purple' %}var(--neon-purple){% else %}var(--neon-pink){% endif %};">
+                                        {{ user.color_scheme|upper }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if user.is_admin %}
+                                    <span class="badge" style="background: var(--neon-purple);">ADMIN</span>
+                                    {% else %}
+                                    <span class="badge" style="background: var(--neon-blue);">USER</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if user.is_active %}
+                                    <span class="status-badge active">
+                                        <i class="bi bi-check-circle-fill"></i> ACTIVE
+                                    </span>
+                                    {% else %}
+                                    <span class="status-badge inactive">
+                                        <i class="bi bi-x-circle-fill"></i> INACTIVE
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ user.created_at.strftime('%d/%m/%y') if user.created_at else 'N/A' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <!-- Edit button for all users (including self) -->
+                                        <a href="{{ url_for('admin.edit_user', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-info"
+                                           title="Edit User">
+                                            <i class="bi bi-pencil"></i>
+                                        </a>
+        
+                                        {% if user.id != current_user.id %}
+                                        <a href="{{ url_for('admin.toggle_user', user_id=user.id) }}" 
+                                           class="btn btn-sm {% if user.is_active %}btn-warning{% else %}btn-success{% endif %}"
+                                           title="{% if user.is_active %}Deactivate{% else %}Activate{% endif %}">
+                                            <i class="bi {% if user.is_active %}bi-pause-circle{% else %}bi-play-circle{% endif %}"></i>
+                                        </a>
+                                        <a href="{{ url_for('admin.delete_user', user_id=user.id) }}" 
+                                           class="btn btn-sm btn-danger"
+                                           onclick="return confirm('⚠️ Delete user {{ user.username }}? This action cannot be undone.')"
+                                           title="Delete User">
+                                            <i class="bi bi-trash"></i>
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="bi bi-people" style="font-size: 4rem; color: var(--neon-purple); opacity: 0.5;"></i>
+                    <h5 class="mt-3" style="color: var(--text-secondary);">NO USERS FOUND</h5>
+                    <p style="color: var(--text-secondary);">The system has no users. Add one to get started.</p>
+                    <a href="{{ url_for('admin.add_user') }}" class="btn btn-primary mt-3">
+                        <i class="bi bi-person-plus"></i> ADD FIRST USER
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- System Stats -->
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-people-fill" style="font-size: 2rem; color: var(--neon-purple);"></i>
+                        <h3 class="mt-2" style="color: var(--neon-green);">{{ users|length }}</h3>
+                        <p style="color: var(--text-secondary);">TOTAL USERS</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-shield-shaded" style="font-size: 2rem; color: var(--neon-purple);"></i>
+                        <h3 class="mt-2" style="color: var(--neon-green);">{{ users|selectattr('is_admin', 'equalto', true)|list|length }}</h3>
+                        <p style="color: var(--text-secondary);">ADMINS</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <i class="bi bi-person-up" style="font-size: 2rem; color: var(--neon-purple);"></i>
+                        <h3 class="mt-2" style="color: var(--neon-green);">{{ users|selectattr('is_active', 'equalto', true)|list|length }}</h3>
+                        <p style="color: var(--text-secondary);">ACTIVE USERS</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Table styling */
+.table {
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+    border-collapse: separate;
+    border-spacing: 0 8px;
+    margin-top: -8px;
+}
+
+.table thead th {
+    color: var(--neon-green);
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: none;
+    padding: 15px 10px;
+    background: rgba(184, 41, 255, 0.1);
+}
+
+.table tbody tr {
+    background: rgba(10, 10, 15, 0.8);
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.table tbody tr:hover {
+    background: rgba(184, 41, 255, 0.15);
+    transform: translateX(5px);
+    box-shadow: 0 0 20px rgba(184, 41, 255, 0.2);
+}
+
+.table tbody td {
+    padding: 15px 10px;
+    border: none;
+    vertical-align: middle;
+}
+
+/* User row colors */
+.purple-user {
+    border-left: 3px solid var(--neon-purple) !important;
+}
+
+.pink-user {
+    border-left: 3px solid var(--neon-pink) !important;
+}
+
+/* Color badge */
+.color-badge {
+    padding: 5px 10px;
+    color: var(--dark-bg);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+/* Status badges */
+.status-badge {
+    padding: 5px 10px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    letter-spacing: 1px;
+}
+
+.status-badge.active {
+    color: var(--neon-green);
+}
+
+.status-badge.inactive {
+    color: var(--warning-red);
+}
+
+.status-badge i {
+    margin-right: 5px;
+}
+
+/* Button group */
+.btn-group {
+    gap: 5px;
+}
+
+.btn-group .btn {
+    border-radius: 0 !important;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+}
+
+.btn-sm {
+    border: 1px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.btn-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px currentColor;
+}
+
+.btn-warning {
+    background: transparent;
+    border-color: #ffc107;
+    color: #ffc107;
+}
+
+.btn-warning:hover {
+    background: #ffc107;
+    color: var(--dark-bg);
+}
+
+.btn-success {
+    background: transparent;
+    border-color: var(--neon-green);
+    color: var(--neon-green);
+}
+
+.btn-success:hover {
+    background: var(--neon-green);
+    color: var(--dark-bg);
+}
+
+.btn-danger {
+    background: transparent;
+    border-color: var(--warning-red);
+    color: var(--warning-red);
+}
+
+.btn-danger:hover {
+    background: var(--warning-red);
+    color: var(--dark-bg);
+}
+
+.btn-secondary {
+    background: transparent;
+    border-color: var(--text-secondary);
+    color: var(--text-secondary);
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-info {
+    background: transparent;
+    border-color: var(--neon-blue);
+    color: var(--neon-blue);
+}
+
+.btn-info:hover {
+    background: var(--neon-blue);
+    color: var(--dark-bg);
+    box-shadow: 0 0 15px var(--neon-blue);
+}
+
+/* Badge styling */
+.badge {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.7rem;
+    padding: 5px 8px;
+    border-radius: 0;
+    letter-spacing: 1px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .table {
+        font-size: 0.8rem;
+    }
+    
+    .btn-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .table tbody td {
+        padding: 10px 5px;
+    }
+    
+    .color-badge, .status-badge {
+        padding: 3px 6px;
+        font-size: 0.7rem;
+    }
+}
+/* Brighter hint text for table captions */
+.table-caption {
+    color: var(--neon-blue) !important;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 10px;
+    text-align: right;
+    opacity: 1;
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+
+/* Make the "NO USERS FOUND" message brighter */
+.text-center.py-5 h5 {
+    color: var(--neon-pink) !important;
+    text-shadow: 0 0 10px var(--neon-pink);
+    font-size: 1.5rem;
+}
+
+.text-center.py-5 p {
+    color: var(--neon-blue) !important;
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+
+/* Form text override for better visibility */
+.form-text {
+    color: var(--neon-blue) !important;
+    opacity: 1;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+
+/* Small text in cards */
+small.text-muted {
+    color: var(--neon-blue) !important;
+    opacity: 1;
+    text-shadow: 0 0 5px var(--neon-blue);
+}
+</style>
+{% endblock %}

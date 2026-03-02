@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card auth-card">
+            <div class="card-header">
+                <h4 class="mb-0 glitch" data-text="> ADD REMINDER">
+                    > ADD REMINDER
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('reminders.add') }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">> REMINDER_TITLE</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="message" class="form-label">> MESSAGE</label>
+                        <textarea class="form-control" id="message" name="message" rows="3" required></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="reminder_time" class="form-label">> REMINDER_TIME</label>
+                        <input type="datetime-local" class="form-control" id="reminder_time" name="reminder_time" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="repeat" class="form-label">> REPEAT</label>
+                        <select class="form-control" id="repeat" name="repeat">
+                            <option value="none">NO REPEAT</option>
+                            <option value="daily">DAILY</option>
+                            <option value="weekly">WEEKLY</option>
+                            <option value="monthly">MONTHLY</option>
+                            <option value="yearly">YEARLY</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            > CREATE_REMINDER
+                        </button>
+                        <a href="{{ url_for('reminders.index') }}" class="btn btn-danger">
+                            > CANCEL
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

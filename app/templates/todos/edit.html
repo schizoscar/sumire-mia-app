@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card auth-card">
+            <div class="card-header">
+                <h4 class="mb-0 glitch" data-text="> EDIT TASK">
+                    > EDIT TASK
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('todos.edit', task_id=task.id) }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">> TASK_TITLE</label>
+                        <input type="text" class="form-control" id="title" name="title" value="{{ task.title }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">> DESCRIPTION</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ task.description or '' }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="due_date" class="form-label">> DUE_DATE</label>
+                        <input type="datetime-local" class="form-control" id="due_date" name="due_date" 
+                               value="{{ task.due_date.strftime('%Y-%m-%dT%H:%M') if task.due_date else '' }}">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="priority" class="form-label">> PRIORITY</label>
+                        <select class="form-control" id="priority" name="priority">
+                            <option value="1" {% if task.priority == 1 %}selected{% endif %}>1 - LOW</option>
+                            <option value="2" {% if task.priority == 2 %}selected{% endif %}>2 - MEDIUM</option>
+                            <option value="3" {% if task.priority == 3 %}selected{% endif %}>3 - HIGH</option>
+                            <option value="4" {% if task.priority == 4 %}selected{% endif %}>4 - CRITICAL</option>
+                            <option value="5" {% if task.priority == 5 %}selected{% endif %}>5 - MAXIMUM</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            > UPDATE_TASK
+                        </button>
+                        <a href="{{ url_for('todos.index') }}" class="btn btn-danger">
+                            > CANCEL
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card auth-card fade-in">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-cup-straw me-2"></i> join us
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('auth.register') }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person me-2"></i>username
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="choose a username" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">
+                            <i class="bi bi-envelope me-2"></i>email
+                        </label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               placeholder="your@email.com" required>
+                        <small class="form-text user-hint">we'll never share your email</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock me-2"></i>password
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="create a password" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="color_scheme" class="form-label">
+                            <i class="bi bi-palette me-2"></i>theme color
+                        </label>
+                        <select class="form-control" id="color_scheme" name="color_scheme">
+                            <option value="purple" style="color: var(--pastel-lavender);">💜 lavender</option>
+                            <option value="pink" style="color: var(--peachy-pink);">🩷 peach</option>
+                        </select>
+                        <small class="form-text user-hint">color to mark your events</small>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-person-plus me-2"></i> create account
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4" style="border-color: var(--pastel-lavender);">
+                
+                <p class="text-center mb-0">
+                    <span style="color: var(--warm-gray);">already have an account?</span>
+                    <a href="{{ url_for('auth.login') }}" style="color: var(--charcoal); font-weight: 500; text-decoration: none; border-bottom: 2px solid var(--pastel-lavender);">
+                        sign in
+                    </a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.user-hint {
+    color: var(--warm-gray) !important;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+}
+
+select.form-control option {
+    padding: 10px;
+}
+</style>
+{% endblock %}

@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Reminders</h1>
+        <a href="{{ url_for('reminders.add') }}" class="btn mb-3" style="background-color: var(--theme-color); color: white;">
+            <i class="fas fa-plus"></i> Add Reminder
+        </a>
+        
+        <div class="reminder-list">
+            {% for reminder in reminders %}
+            <div class="card mb-3" style="border-left: 4px solid var(--theme-color);">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-8">
+                            <h5 class="card-title">{{ reminder.title }}</h5>
+                            <p class="card-text">{{ reminder.message }}</p>
+                            <p class="card-text">
+                                <small class="text-muted">
+                                    <i class="far fa-clock"></i> {{ reminder.reminder_time.strftime('%Y-%m-%d %H:%M') }}
+                                    {% if reminder.repeat != 'none' %}
+                                    <span class="badge bg-info ms-2">Repeats {{ reminder.repeat }}</span>
+                                    {% endif %}
+                                </small>
+                            </p>
+                        </div>
+                        <div class="col-4 text-end">
+                            <a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{{ url_for('reminders.delete', reminder_id=reminder.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this reminder?')">
+                                <i class="fas fa-trash"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">No reminders yet. Click "Add Reminder" to create one!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

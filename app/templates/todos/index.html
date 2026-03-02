@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">To-Do List</h1>
+        <a href="{{ url_for('todos.add') }}" class="btn mb-3" style="background-color: var(--theme-color); color: white;">
+            <i class="fas fa-plus"></i> Add Task
+        </a>
+        
+        <div class="task-list">
+            {% for task in tasks %}
+            <div class="task-item {% if task.completed %}completed{% endif %}" style="border-left: 4px solid var(--theme-color);">
+                <div class="row align-items-center">
+                    <div class="col-1">
+                        <a href="{{ url_for('todos.toggle', task_id=task.id) }}" class="text-decoration-none">
+                            {% if task.completed %}
+                            <i class="fas fa-check-circle" style="color: var(--theme-color); font-size: 1.5rem;"></i>
+                            {% else %}
+                            <i class="far fa-circle" style="color: var(--theme-color); font-size: 1.5rem;"></i>
+                            {% endif %}
+                        </a>
+                    </div>
+                    <div class="col-8">
+                        <h5 class="mb-1">{{ task.title }}</h5>
+                        {% if task.description %}
+                        <p class="mb-1 text-muted">{{ task.description }}</p>
+                        {% endif %}
+                        {% if task.due_date %}
+                        <small class="text-muted">Due: {{ task.due_date.strftime('%Y-%m-%d') }}</small>
+                        {% endif %}
+                    </div>
+                    <div class="col-3 text-end">
+                        <a href="{{ url_for('todos.edit', task_id=task.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{{ url_for('todos.delete', task_id=task.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this task?')">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <p class="text-muted">No tasks yet. Click "Add Task" to create one!</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

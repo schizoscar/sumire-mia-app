@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-5">
+        <div class="card auth-card fade-in">
+            <div class="card-header text-center">
+                <h4 class="mb-0">
+                    <i class="bi bi-cup-straw me-2"></i> welcome back
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('auth.login') }}">
+                    <div class="mb-4">
+                        <label for="username" class="form-label">
+                            <i class="bi bi-person me-2"></i>username
+                        </label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               placeholder="enter your username" required autofocus>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label for="password" class="form-label">
+                            <i class="bi bi-lock me-2"></i>password
+                        </label>
+                        <input type="password" class="form-control" id="password" name="password" 
+                               placeholder="••••••••" required>
+                    </div>
+                    
+                    <div class="mb-4 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember" name="remember">
+                        <label class="form-check-label" for="remember">remember me on this device</label>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right me-2"></i> sign in
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4" style="border-color: var(--pastel-lavender);">
+                
+                <p class="text-center mb-0">
+                    <span style="color: var(--warm-gray);">new here?</span>
+                    <a href="{{ url_for('auth.register') }}" style="color: var(--charcoal); font-weight: 500; text-decoration: none; border-bottom: 2px solid var(--pastel-lavender);">
+                        create account
+                    </a>
+                </p>
+            </div>
+        </div>
+        
+        <!-- Decorative elements -->
+        <div class="text-center mt-4">
+            <span style="color: var(--pastel-lavender); font-size: 0.9rem;">
+                <i class="bi bi-dot"></i> すみれ＆みあ <i class="bi bi-dot"></i>
+            </span>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Additional login page specific styling */
+.auth-card {
+    border: none;
+}
+
+.form-control::placeholder {
+    color: var(--warm-gray);
+    opacity: 0.6;
+    font-style: normal;
+}
+
+.form-check-label {
+    color: var(--warm-gray);
+    font-size: 0.9rem;
+}
+
+hr {
+    opacity: 0.3;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+    .auth-card {
+        margin: 20px auto;
+    }
+    
+    .card-body {
+        padding: 1.5rem;
+    }
+}
+</style>
+{% endblock %}

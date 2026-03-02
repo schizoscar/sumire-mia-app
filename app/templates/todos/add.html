@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card auth-card">
+            <div class="card-header">
+                <h4 class="mb-0 glitch" data-text="> ADD NEW TASK">
+                    > ADD NEW TASK
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('todos.add') }}">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">> TASK_TITLE</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">> DESCRIPTION</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="due_date" class="form-label">> DUE_DATE</label>
+                        <input type="datetime-local" class="form-control" id="due_date" name="due_date">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="priority" class="form-label">> PRIORITY</label>
+                        <select class="form-control" id="priority" name="priority">
+                            <option value="1">1 - LOW</option>
+                            <option value="2">2 - MEDIUM</option>
+                            <option value="3" selected>3 - HIGH</option>
+                            <option value="4">4 - CRITICAL</option>
+                            <option value="5">5 - MAXIMUM</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            > CREATE_TASK
+                        </button>
+                        <a href="{{ url_for('todos.index') }}" class="btn btn-danger">
+                            > CANCEL
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

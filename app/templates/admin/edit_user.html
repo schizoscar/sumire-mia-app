@@ -1,0 +1,156 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card auth-card">
+            <div class="card-header">
+                <h4 class="mb-0 glitch" data-text="> EDIT USER: {{ user.username }}">
+                    > EDIT USER: {{ user.username }}
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('admin.edit_user', user_id=user.id) }}">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">> USERNAME</label>
+                        <input type="text" class="form-control" id="username" name="username" 
+                               value="{{ user.username }}" required
+                        <small class="form-text user-hint">Username must be unique</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">> EMAIL</label>
+                        <input type="email" class="form-control" id="email" name="email" 
+                               value="{{ user.email }}" required
+                        <small class="form-text user-hint">Valid email address required</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="color_scheme" class="form-label">> COLOR SCHEME</label>
+                        <select class="form-control" id="color_scheme" name="color_scheme" 
+                                style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);">
+                            <option value="purple" {% if user.color_scheme == 'purple' %}selected{% endif %} 
+                                    style="color: var(--neon-purple);">💜 PURPLE</option>
+                            <option value="pink" {% if user.color_scheme == 'pink' %}selected{% endif %} 
+                                    style="color: var(--neon-pink);">🩷 PINK</option>
+                        </select>
+                        <small class="form-text user-hint">Determines theme color for this user</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role" class="form-label">> USER ROLE</label>
+                        <select class="form-control" id="role" name="is_admin" 
+                                style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);">
+                            <option value="0" {% if not user.is_admin %}selected{% endif %} 
+                                    style="color: var(--neon-blue);">👤 USER</option>
+                            <option value="1" {% if user.is_admin %}selected{% endif %} 
+                                    style="color: var(--neon-purple);">⚡ ADMIN</option>
+                        </select>
+                        <small class="form-text user-hint">Admins can manage users and system settings</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">> ACCOUNT STATUS</label>
+                        <div class="form-control" style="background: rgba(10,10,15,0.9); border: 1px solid var(--neon-purple);">
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="is_active" id="active_yes" 
+                                       value="1" {% if user.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="active_yes">ACTIVE</label>
+                            </div>
+                            <div class="form-check form-check-inline">
+                                <input class="form-check-input" type="radio" name="is_active" id="active_no" 
+                                       value="0" {% if not user.is_active %}checked{% endif %}>
+                                <label class="form-check-label" for="active_no">INACTIVE</label>
+                            </div>
+                        </div>
+                        <small class="form-text user-hint">⚠️ Inactive users cannot log in</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">> RESET PASSWORD</label>
+                        <div class="form-control" style="background: rgba(10,10,15,0.9); border: 1px solid var(--neon-purple);">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="reset_password" name="reset_password">
+                                <label class="form-check-label" for="reset_password">
+                                    Generate new temporary password
+                                </label>
+                            </div>
+                        </div>
+                        <small class="form-text user-hint">New password will be emailed to user</small>
+                    </div>
+                    
+                    <div class="alert alert-info" style="background: rgba(10,10,15,0.9); border-left-color: var(--neon-blue);">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        Last login: {{ user.last_login.strftime('%d/%m/%y %I:%M %p') if user.last_login else 'Never' }}
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            <i class="bi bi-save"></i> SAVE CHANGES
+                        </button>
+                        <a href="{{ url_for('admin.users') }}" class="btn btn-danger">
+                            <i class="bi bi-x-circle"></i> CANCEL
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.form-check-inline {
+    margin-right: 20px;
+}
+
+.form-check-input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    margin-top: 0;
+}
+
+.form-check-input[type="radio"]:checked {
+    background-color: var(--neon-purple);
+    border-color: var(--neon-purple);
+}
+
+.form-check-label {
+    color: var(--text-primary);
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+.form-control .form-check {
+    margin-bottom: 5px;
+}
+
+/* Brighter hint text */
+.user-hint {
+    color: var(--neon-blue) !important;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    margin-top: 5px;
+    display: block;
+    opacity: 0.9;
+    text-shadow: 0 0 5px var(--neon-blue);
+    letter-spacing: 0.5px;
+}
+
+/* Warning hint for inactive users */
+.user-hint:contains("Inactive users cannot log in") {
+    color: var(--neon-pink) !important;
+    text-shadow: 0 0 5px var(--neon-pink);
+}
+
+/* Alert styling */
+.alert {
+    border-radius: 0;
+    color: var(--text-primary);
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.alert i {
+    color: var(--neon-blue);
+}
+</style>
+{% endblock %}

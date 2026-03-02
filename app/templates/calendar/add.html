@@ -1,0 +1,542 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card auth-card">
+            <div class="card-header">
+                <h4 class="mb-0 glitch" data-text="> ADD NEW EVENT">
+                    > ADD NEW EVENT
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('calendar.add') }}" id="eventForm">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">> EVENT TITLE</label>
+                        <input type="text" class="form-control" id="title" name="title" 
+                               value="{{ form_data.title if form_data else '' }}" required
+                               style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">> DESCRIPTION</label>
+                        <textarea class="form-control" id="description" name="description" rows="3"
+                                  style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);">{{ form_data.description if form_data else '' }}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="start_date" class="form-label">> START DATE</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control datepicker-input" id="start_date" 
+                                       placeholder="DD/MM/YY" 
+                                       value="{{ form_data.start_date.split(' ')[0] if form_data and form_data.start_date else '' }}" 
+                                       required 
+                                       style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);" 
+                                       readonly>
+                                <span class="input-group-text date-icon" style="background: transparent; border: 1px solid var(--neon-purple); cursor: pointer;" id="start_date_icon">
+                                    <i class="bi bi-calendar3" style="color: var(--neon-purple);"></i>
+                                </span>
+                            </div>
+                            <small class="form-text text-date-example">Selected: <span id="start_date_display" style="color: var(--neon-pink) !important; font-weight: bold;">{{ form_data.start_date.split(' ')[0] if form_data and form_data.start_date else 'Not set' }}</span></small>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="end_date" class="form-label">> END DATE</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control datepicker-input" id="end_date" 
+                                       placeholder="DD/MM/YY" 
+                                       value="{{ form_data.end_date.split(' ')[0] if form_data and form_data.end_date else '' }}" 
+                                       required 
+                                       style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);" 
+                                       readonly>
+                                <span class="input-group-text date-icon" style="background: transparent; border: 1px solid var(--neon-pink); cursor: pointer;" id="end_date_icon">
+                                    <i class="bi bi-calendar3" style="color: var(--neon-pink);"></i>
+                                </span>
+                            </div>
+                            <small class="form-text text-date-example">Selected: <span id="end_date_display" style="color: var(--neon-pink) !important; font-weight: bold;">{{ form_data.end_date.split(' ')[0] if form_data and form_data.end_date else 'Not set' }}</span></small>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-2">
+                        <div class="col-md-6">
+                            <label class="form-label">> START TIME (AM/PM)</label>
+                            <select class="form-control time-select" id="start_time" name="start_time" style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9); border: 1px solid var(--neon-purple);">
+                                <option value="12:00 AM">12:00 AM</option>
+                                <option value="01:00 AM">01:00 AM</option>
+                                <option value="02:00 AM">02:00 AM</option>
+                                <option value="03:00 AM">03:00 AM</option>
+                                <option value="04:00 AM">04:00 AM</option>
+                                <option value="05:00 AM">05:00 AM</option>
+                                <option value="06:00 AM">06:00 AM</option>
+                                <option value="07:00 AM">07:00 AM</option>
+                                <option value="08:00 AM">08:00 AM</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="11:00 AM">11:00 AM</option>
+                                <option value="12:00 PM" selected>12:00 PM</option>
+                                <option value="01:00 PM">01:00 PM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:00 PM">03:00 PM</option>
+                                <option value="04:00 PM">04:00 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                                <option value="06:00 PM">06:00 PM</option>
+                                <option value="07:00 PM">07:00 PM</option>
+                                <option value="08:00 PM">08:00 PM</option>
+                                <option value="09:00 PM">09:00 PM</option>
+                                <option value="10:00 PM">10:00 PM</option>
+                                <option value="11:00 PM">11:00 PM</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">> END TIME (AM/PM)</label>
+                            <select class="form-control time-select" id="end_time" name="end_time" style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9); border: 1px solid var(--neon-pink);">
+                                <option value="12:00 AM">12:00 AM</option>
+                                <option value="01:00 AM">01:00 AM</option>
+                                <option value="02:00 AM">02:00 AM</option>
+                                <option value="03:00 AM">03:00 AM</option>
+                                <option value="04:00 AM">04:00 AM</option>
+                                <option value="05:00 AM">05:00 AM</option>
+                                <option value="06:00 AM">06:00 AM</option>
+                                <option value="07:00 AM">07:00 AM</option>
+                                <option value="08:00 AM">08:00 AM</option>
+                                <option value="09:00 AM">09:00 AM</option>
+                                <option value="10:00 AM">10:00 AM</option>
+                                <option value="11:00 AM">11:00 AM</option>
+                                <option value="12:00 PM" selected>12:00 PM</option>
+                                <option value="01:00 PM">01:00 PM</option>
+                                <option value="02:00 PM">02:00 PM</option>
+                                <option value="03:00 PM">03:00 PM</option>
+                                <option value="04:00 PM">04:00 PM</option>
+                                <option value="05:00 PM">05:00 PM</option>
+                                <option value="06:00 PM">06:00 PM</option>
+                                <option value="07:00 PM">07:00 PM</option>
+                                <option value="08:00 PM">08:00 PM</option>
+                                <option value="09:00 PM">09:00 PM</option>
+                                <option value="10:00 PM">10:00 PM</option>
+                                <option value="11:00 PM">11:00 PM</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check mt-3">
+                        <input type="checkbox" class="form-check-input" id="copy_end" checked>
+                        <label class="form-check-label" for="copy_end">AUTO_COPY START TO END</label>
+                    </div>
+                    
+                    <!-- Hidden fields for combined datetime -->
+                    <input type="hidden" id="start_datetime" name="start_date">
+                    <input type="hidden" id="end_datetime" name="end_date">
+                    
+                    <div class="d-flex gap-2 mt-4">
+                        <button type="submit" class="btn btn-primary flex-grow-1">
+                            > CREATE_EVENT
+                        </button>
+                        <a href="{{ url_for('calendar.index') }}" class="btn btn-danger">
+                            > CANCEL
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript for datetime handling -->
+<!-- Update the JavaScript section - replace the updateHiddenFields and submit handler -->
+
+<script>
+    $(document).ready(function () {
+        console.log("Datepicker initializing...");
+
+        // Initialize datepickers
+        $('.datepicker-input').datepicker({
+            format: 'dd/mm/yy',
+            autoclose: true,
+            todayHighlight: true,
+            startDate: '0d',
+            orientation: 'bottom auto'
+        }).on('changeDate', function (e) {
+            const selectedDate = e.date;
+            const day = String(selectedDate.getDate()).padStart(2, '0');
+            const month = String(selectedDate.getMonth() + 1).padStart(2, '0');
+            const year = String(selectedDate.getFullYear()).slice(-2);
+
+            const formattedDate = `${day}/${month}/${year}`;
+            $(this).val(formattedDate);
+
+            const displayId = $(this).attr('id') === 'start_date' ? '#start_date_display' : '#end_date_display';
+            $(displayId).text(formattedDate);
+
+            updateHiddenFields();
+
+            if ($(this).attr('id') === 'start_date' && $('#copy_end').is(':checked')) {
+                $('#end_date').val(formattedDate);
+                $('#end_date_display').text(formattedDate);
+                updateHiddenFields();
+            }
+        });
+
+        // Function to update hidden datetime fields
+        function updateHiddenFields() {
+            const startDate = $('#start_date').val();
+            const startTime = $('#start_time').val();
+            const endDate = $('#end_date').val();
+            const endTime = $('#end_time').val();
+
+            console.log("Updating hidden fields - Start:", startDate, startTime, "| End:", endDate, endTime);
+
+            if (startDate && startTime) {
+                const startDateTime = `${startDate} ${startTime}`;
+                $('#start_datetime').val(startDateTime);
+                console.log("✅ Start datetime set to:", startDateTime);
+            }
+
+            if (endDate && endTime) {
+                const endDateTime = `${endDate} ${endTime}`;
+                $('#end_datetime').val(endDateTime);
+                console.log("✅ End datetime set to:", endDateTime);
+            }
+        }
+
+        // Trigger datepicker on icon click
+        $('#start_date_icon').on('click', function () {
+            $('#start_date').datepicker('show');
+        });
+
+        $('#end_date_icon').on('click', function () {
+            $('#end_date').datepicker('show');
+        });
+
+        // Time select change handlers
+        $('#start_time, #end_time').on('change', function () {
+            console.log("Time changed to:", $(this).val());
+            updateHiddenFields();
+
+            if ($(this).attr('id') === 'start_time' && $('#copy_end').is(':checked')) {
+                $('#end_time').val($(this).val());
+                updateHiddenFields();
+            }
+        });
+
+        // Date change handler
+        $('#start_date, #end_date').on('change', function () {
+            updateHiddenFields();
+        });
+
+        // Toggle user selector based on event type
+        $('input[name="event_type"]').on('change', function () {
+            if ($(this).val() === 'joined') {
+                $('#userSelector').slideDown(200);
+                $('#joined_user').prop('required', true);
+            } else {
+                $('#userSelector').slideUp(200);
+                $('#joined_user').prop('required', false);
+            }
+        });
+
+        // Auto-copy checkbox handler
+        $('#copy_end').on('change', function () {
+            if ($(this).is(':checked')) {
+                $('#end_date').val($('#start_date').val());
+                $('#end_date_display').text($('#start_date').val());
+                $('#end_time').val($('#start_time').val());
+                updateHiddenFields();
+                console.log("Auto-copied start to end");
+            }
+        });
+
+        // Form submit handler
+        $('#eventForm').on('submit', function (e) {
+            console.log("Form submitting...");
+            updateHiddenFields();
+
+            const startHidden = $('#start_datetime').val();
+            const endHidden = $('#end_datetime').val();
+
+            console.log("Final start_datetime:", startHidden);
+            console.log("Final end_datetime:", endHidden);
+
+            if (!startHidden || !endHidden) {
+                e.preventDefault();
+                alert('Please select both date and time for start and end.');
+                return false;
+            }
+
+            if (!startHidden.includes(' ') || !endHidden.includes(' ')) {
+                e.preventDefault();
+                alert('Please ensure both date and time are selected.');
+                return false;
+            }
+
+            console.log("Form validation passed, submitting...");
+            return true;
+        });
+
+        // Initial update
+        setTimeout(updateHiddenFields, 100);
+    });
+</script>
+
+<!-- Event Type Selection -->
+<div class="mb-4">
+    <label class="form-label">> event type</label>
+    <div class="event-type-selector">
+        <div class="event-type-option solo">
+            <input type="radio" name="event_type" id="event_solo" value="solo" checked>
+            <label for="event_solo">
+                <span class="color-preview purple"></span>
+                solo event
+            </label>
+        </div>
+        <div class="event-type-option joined">
+            <input type="radio" name="event_type" id="event_joined" value="joined">
+            <label for="event_joined">
+                <span class="color-preview red"></span>
+                joined event
+            </label>
+        </div>
+    </div>
+</div>
+
+<!-- User Selector for Joined Events -->
+<div class="user-selector mb-4" id="userSelector">
+    <label class="form-label">> join with</label>
+    <select class="form-control" id="joined_user" name="joined_user_id">
+        <option value="">select a user...</option>
+        {% for user in users %}
+            {% if user.id != current_user.id %}
+            <option value="{{ user.id }}" style="color: {% if user.color_scheme == 'purple' %}#e6e6fa{% else %}#ffdab9{% endif %};">
+                {{ user.username }} ({{ user.color_scheme }})
+            </option>
+            {% endif %}
+        {% endfor %}
+    </select>
+    <small class="form-text user-hint">joined events will appear in red for both users</small>
+</div>
+
+<!-- Add this JavaScript -->
+<script>
+    $(document).ready(function () {
+        // Toggle user selector based on event type
+        $('input[name="event_type"]').on('change', function () {
+            if ($(this).val() === 'joined') {
+                $('#userSelector').addClass('visible');
+                $('#joined_user').prop('required', true);
+            } else {
+                $('#userSelector').removeClass('visible');
+                $('#joined_user').prop('required', false);
+            }
+        });
+
+        // Update form submission to include event type
+        $('#eventForm').on('submit', function () {
+            // ... existing code ...
+
+            // Add event type to hidden fields
+            const eventType = $('input[name="event_type"]:checked').val();
+            $('<input>').attr({
+                type: 'hidden',
+                name: 'event_type',
+                value: eventType
+            }).appendTo('#eventForm');
+        });
+    });
+</script>
+
+<style>
+/* Datepicker customization */
+.datepicker {
+    background: var(--darker-bg) !important;
+    border: 2px solid var(--neon-purple) !important;
+    border-radius: 0 !important;
+    font-family: 'Share Tech Mono', monospace;
+    z-index: 9999 !important;
+}
+
+.datepicker table {
+    background: var(--darker-bg);
+    width: 100%;
+}
+
+.datepicker td, .datepicker th {
+    color: var(--text-primary) !important;
+    border-radius: 0 !important;
+    padding: 8px !important;
+}
+
+.datepicker td.active, .datepicker td.active:hover {
+    background: var(--neon-purple) !important;
+    color: var(--dark-bg) !important;
+    text-shadow: none !important;
+}
+
+.datepicker td:hover {
+    background: rgba(184, 41, 255, 0.3) !important;
+}
+
+.datepicker .datepicker-switch:hover, 
+.datepicker .prev:hover, 
+.datepicker .next:hover {
+    background: var(--neon-pink) !important;
+}
+
+/* Force text colors */
+.form-control, .form-control:focus {
+    color: var(--neon-green) !important;
+    background: rgba(10, 10, 15, 0.9) !important;
+    border: 1px solid var(--neon-purple);
+}
+
+.form-control:focus {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 10px rgba(255, 42, 109, 0.3);
+}
+
+.form-control::placeholder {
+    color: rgba(10, 255, 157, 0.5) !important;
+}
+
+/* Date icon hover effect */
+.date-icon {
+    border-radius: 0 !important;
+    transition: all 0.3s ease;
+}
+
+.date-icon:hover {
+    background: rgba(184, 41, 255, 0.3) !important;
+    border-color: var(--neon-pink) !important;
+}
+
+/* Example text */
+.text-date-example {
+    color: var(--neon-green) !important;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Time select styling */
+.time-select {
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    border-radius: 0;
+    margin-top: 5px;
+    padding: 10px;
+    transition: all 0.3s ease;
+}
+
+.time-select option {
+    background: var(--darker-bg);
+    color: var(--text-primary);
+    padding: 10px;
+}
+
+.time-select:hover {
+    border-color: var(--neon-pink) !important;
+    box-shadow: 0 0 10px rgba(255, 42, 109, 0.2);
+}
+
+/* Checkbox styling */
+.form-check-input {
+    background-color: transparent;
+    border-color: var(--neon-purple);
+    cursor: pointer;
+    width: 20px;
+    height: 20px;
+    margin-top: 0.25rem;
+}
+
+.form-check-input:checked {
+    background-color: var(--neon-purple);
+    border-color: var(--neon-purple);
+}
+
+.form-check-label {
+    color: var(--neon-green);
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    margin-left: 10px;
+    font-size: 0.9rem;
+}
+
+/* Input group enhancements */
+.input-group-text {
+    border-radius: 0;
+    transition: all 0.3s ease;
+}
+
+/* Button styling */
+.btn {
+    font-family: 'Share Tech Mono', monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 0;
+    padding: 12px 20px;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: transparent;
+    border: 2px solid var(--neon-purple);
+    color: var(--neon-purple);
+}
+
+.btn-primary:hover {
+    background: var(--neon-purple);
+    color: var(--dark-bg);
+    box-shadow: 0 0 20px var(--neon-purple);
+    transform: translateY(-2px);
+}
+
+.btn-danger {
+    background: transparent;
+    border: 2px solid var(--warning-red);
+    color: var(--warning-red);
+}
+
+.btn-danger:hover {
+    background: var(--warning-red);
+    color: var(--dark-bg);
+    box-shadow: 0 0 20px var(--warning-red);
+    transform: translateY(-2px);
+}
+
+/* Card styling */
+.auth-card {
+    border: 2px solid var(--neon-purple);
+    box-shadow: 0 0 30px rgba(184, 41, 255, 0.2);
+    animation: glow 3s infinite;
+}
+
+@keyframes glow {
+    0% { box-shadow: 0 0 30px rgba(184, 41, 255, 0.2); }
+    50% { box-shadow: 0 0 50px rgba(255, 42, 109, 0.3); }
+    100% { box-shadow: 0 0 30px rgba(184, 41, 255, 0.2); }
+}
+
+.card-header {
+    background: rgba(184, 41, 255, 0.1);
+    border-bottom: 2px solid var(--neon-purple);
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .col-md-6 {
+        margin-bottom: 15px;
+    }
+    
+    .btn {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .d-flex.gap-2 {
+        flex-direction: column;
+    }
+}
+</style>
+{% endblock %}
