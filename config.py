@@ -15,7 +15,7 @@ class Config:
         # Render uses postgres:// but SQLAlchemy needs postgresql://
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
     
-    SQLALCHEMY_DATABASE_URI = database_url or 'postgresql://localhost/sumire_mia_db'
+    SQLALCHEMY_DATABASE_URI = database_url or 'postgresql://sumiremiadb_user:kduwJgXOsdbozAe4wRbEMjXcpRnFBO4R@dpg-d6iop8n5r7bs73fmgheg-a/sumiremiadb'
     
     # App settings
     APP_NAME = os.environ.get('APP_NAME', 'すみれ＆みあ')
