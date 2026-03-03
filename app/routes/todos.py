@@ -9,7 +9,16 @@ from datetime import datetime
 @login_required
 def index():
     """To-do list view."""
-    tasks = Task.query.filter_by(user_id=current_user.id).order_by(Task.created_at.desc()).all()
+    from sqlalchemy import case
+    
+    # Order by: completed status, then by completed_at (for completed tasks) or created_at
+    tasks = Task.query.filter_by(user_id=current_user.id).order_by(
+        Task.completed.asc(),  # Incomplete first
+        case(
+            (Task.completed == True, Task.completed_at),
+            else_=Task.created_at
+        ).desc()  # Apply DESC outside the case
+    ).all()
     return render_template('todos/index.html', title='To-Do List', tasks=tasks)
 
 @todos_bp.route('/add', methods=['GET', 'POST'])

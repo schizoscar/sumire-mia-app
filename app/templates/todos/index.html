@@ -15,10 +15,11 @@
         
         <div class="task-list">
             {% for task in tasks %}
-            <div class="task-item d-flex align-items-center justify-content-between">
-                <div class="d-flex align-items-center">
+            <div class="task-item {% if task.completed %}completed{% endif %}">
+                <!-- Top row: Checkbox, color dot, task title, and status (desktop only) -->
+                <div class="d-flex align-items-start w-100">
                     <!-- Checkbox -->
-                    <a href="{{ url_for('todos.toggle', task_id=task.id) }}" class="text-decoration-none me-3">
+                    <a href="{{ url_for('todos.toggle', task_id=task.id) }}" class="text-decoration-none me-3 mt-1">
                         {% if task.completed %}
                         <i class="bi bi-check-circle-fill" style="color: var(--sage-green); font-size: 1.5rem;"></i>
                         {% else %}
@@ -27,36 +28,62 @@
                     </a>
                     
                     <!-- Color dot -->
-                    <span class="color-dot" style="background-color: 
+                    <span class="color-dot mt-2" style="background-color: 
                         {% if task.task_owner.color_scheme == 'purple' %}#e6e6fa; border: 2px solid #c084fc;
                         {% elif task.task_owner.color_scheme == 'pink' %}#ffdab9; border: 2px solid #f9a8d4;
                         {% elif task.task_owner.color_scheme == 'blue' %}#b8e2f2; border: 2px solid #7aa5c7;
                         {% elif task.task_owner.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
                         {% endif %}"></span>
                     
-                    <div class="ms-3">
-                        <h6 class="mb-0 {% if task.completed %}text-decoration-line-through text-secondary{% endif %}">{{ task.title }}</h6>
+                    <!-- Task title and description -->
+                    <div class="ms-3 flex-grow-1">
+                        <h6 class="task-title mb-1 {% if task.completed %}text-decoration-line-through{% endif %}">{{ task.title }}</h6>
+                        {% if task.description %}
+                        <p class="task-description mb-1">{{ task.description }}</p>
+                        {% endif %}
                         <small class="text-secondary">
                             {% if task.due_date %}
                                 due {{ task.due_date.strftime('%d/%m/%y') }}
                             {% else %}
                                 no due date
                             {% endif %}
+                            {% if task.priority %}
+                                · priority: {{ task.priority }}
+                            {% endif %}
                         </small>
                     </div>
-                </div>
-                <div class="d-flex align-items-center gap-2">
+
+                    <!-- Status badge - desktop only -->
                     {% if not task.completed %}
-                    <span class="badge" style="background: rgba(230, 230, 250, 0.3); color: var(--charcoal);">pending</span>
+                    <span class="badge status-badge desktop-only" style="background: rgba(230, 230, 250, 0.3); color: var(--charcoal);">pending</span>
                     {% else %}
-                    <span class="badge" style="background: rgba(204, 213, 174, 0.3); color: var(--charcoal);">completed</span>
+                    <span class="badge status-badge desktop-only" style="background: rgba(204, 213, 174, 0.3); color: var(--charcoal);">completed</span>
                     {% endif %}
-                    <a href="{{ url_for('todos.edit', task_id=task.id) }}" class="btn btn-sm btn-outline-primary">
-                        <i class="bi bi-pencil"></i>
-                    </a>
-                    <a href="{{ url_for('todos.delete', task_id=task.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this task?')">
-                        <i class="bi bi-trash"></i>
-                    </a>
+                </div>
+
+                <!-- Bottom row: Status (mobile only) and action buttons -->
+                <div class="task-actions">
+                    <!-- Status badge - mobile only -->
+                    {% if not task.completed %}
+                    <span class="badge status-badge mobile-only" style="background: rgba(230, 230, 250, 0.3); color: var(--charcoal);">pending</span>
+                    {% else %}
+                    <span class="badge status-badge mobile-only" style="background: rgba(204, 213, 174, 0.3); color: var(--charcoal);">completed</span>
+                    {% endif %}
+                    
+                    <!-- Buttons - icons only, exactly like user management -->
+                    <div class="btn-group" role="group">
+                        <a href="{{ url_for('todos.edit', task_id=task.id) }}" 
+                           class="btn btn-sm btn-info"
+                           title="edit task">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('todos.delete', task_id=task.id) }}" 
+                           class="btn btn-sm btn-danger"
+                           onclick="return confirm('Delete this task?')"
+                           title="delete task">
+                            <i class="bi bi-trash"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
             {% else %}
@@ -105,6 +132,40 @@
     box-shadow: var(--shadow-soft);
 }
 
+/* Completed task styling */
+.task-item.completed {
+    background: #f8f9fa;
+    opacity: 0.8;
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.task-item.completed .task-title,
+.task-item.completed .task-description,
+.task-item.completed small {
+    color: #6c757d !important;
+}
+
+.task-item.completed .color-dot {
+    opacity: 0.5;
+}
+
+.task-item.completed .btn-group .btn {
+    opacity: 0.7;
+}
+
+.task-item.completed .btn-group .btn:hover {
+    opacity: 1;
+}
+
+/* Task description styling */
+.task-description {
+    color: var(--warm-gray);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin-top: 2px;
+    white-space: pre-wrap; /* This preserves both line breaks and spaces */
+}
+
 /* Color dot styling */
 .color-dot {
     display: inline-block;
@@ -123,22 +184,184 @@
     font-size: 0.75rem;
 }
 
-/* Mobile task item adjustments */
+/* Hide mobile-only on desktop, hide desktop-only on mobile */
+.mobile-only {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .desktop-only {
+        display: none;
+    }
+    .mobile-only {
+        display: inline-block;
+    }
+}
+
+/* Button group styling - matching user management EXACTLY */
+.btn-group {
+    display: flex;
+    gap: 5px;
+}
+
+.btn-group .btn {
+    border-radius: 20px !important;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    border: 1px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.btn-group .btn i {
+    font-size: 0.9rem;
+}
+
+.btn-sm:hover {
+    transform: translateY(-2px);
+}
+
+/* Button colors - matching user management EXACTLY */
+.btn-info {
+    background: var(--pastel-lavender);
+    border-color: var(--soft-lavender);
+    color: var(--charcoal);
+}
+
+.btn-info:hover {
+    background: var(--soft-lavender);
+}
+
+.btn-danger {
+    background: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
+}
+
+.btn-danger:hover {
+    background: #f5c2c7;
+}
+
+/* Desktop task layout */
+@media (min-width: 769px) {
+    .task-item {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .task-item .d-flex.align-items-start {
+        width: 100%;
+    }
+    
+    /* Make task title and description take available space */
+    .task-item .flex-grow-1 {
+        flex: 1;
+    }
+    
+    /* Buttons styling - compact on desktop */
+    .task-actions {
+        display: flex;
+        justify-content: flex-end;
+        width: 100%;
+    }
+    
+    .btn-group .btn {
+        padding: 4px 8px;
+    }
+    
+    .btn-group .btn i {
+        font-size: 0.85rem;
+    }
+    
+    /* Tooltips on hover */
+    .btn-group .btn {
+        position: relative;
+    }
+    
+    .btn-group .btn:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--charcoal);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        z-index: 1000;
+    }
+}
+
+/* Mobile task layout */
 @media (max-width: 768px) {
     .task-item {
+        display: flex;
         flex-direction: column;
-        align-items: flex-start !important;
         gap: 12px;
     }
     
-    .task-item .d-flex.align-items-center {
+    /* Top row with checkbox, color dot, task info */
+    .task-item .d-flex.align-items-start {
         width: 100%;
-        flex-wrap: wrap;
     }
     
-    .task-item .d-flex.align-items-center.gap-2 {
-        justify-content: flex-end;
+    /* Task title and description */
+    .task-item .flex-grow-1 {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .task-description {
+        font-size: 0.8rem;
+    }
+    
+    /* Bottom row with status and buttons */
+    .task-actions {
         width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+    }
+    
+    /* Status badge on the left */
+    .status-badge.mobile-only {
+        margin: 0;
+        flex-shrink: 0;
+    }
+    
+    /* Buttons on the right - exactly like user management */
+    .btn-group {
+        flex-direction: row;
+        gap: 8px;
+        margin-left: auto;
+    }
+    
+    .btn-group .btn {
+        width: auto;
+        padding: 8px 12px;
+    }
+    
+    .btn-group .btn i {
+        font-size: 1rem;
+    }
+    
+    /* No tooltips needed on mobile */
+    .btn-group .btn:hover::after {
+        display: none;
+    }
+}
+
+/* Small mobile devices */
+@media (max-width: 480px) {
+    .task-item .flex-grow-1 {
+        min-width: 120px;
+    }
+    
+    .btn-group .btn {
+        padding: 8px 10px;
     }
 }
 </style>
