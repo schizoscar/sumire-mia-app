@@ -95,12 +95,12 @@ def add():
 @calendar_bp.route('/edit/<int:event_id>', methods=['GET', 'POST'])
 @login_required
 def edit(event_id):
-    """Edit event."""
+    """Edit event - only owner can edit."""
     event = Event.query.get_or_404(event_id)
     
     # Check if user owns this event
     if event.user_id != current_user.id:
-        flash('You cannot edit this event.', 'error')
+        flash('You can only edit your own events.', 'error')
         return redirect(url_for('calendar.index'))
     
     if request.method == 'POST':
@@ -136,12 +136,12 @@ def edit(event_id):
 @calendar_bp.route('/delete/<int:event_id>')
 @login_required
 def delete(event_id):
-    """Delete event."""
+    """Delete event - only owner can delete."""
     event = Event.query.get_or_404(event_id)
     
     # Check if user owns this event
     if event.user_id != current_user.id:
-        flash('You cannot delete this event.', 'error')
+        flash('You can only delete your own events.', 'error')
         return redirect(url_for('calendar.index'))
     
     db.session.delete(event)
@@ -152,9 +152,9 @@ def delete(event_id):
 @calendar_bp.route('/api/events')
 @login_required
 def api_events():
-    """API endpoint for calendar events."""
-    # Get user's events
-    events = Event.query.filter_by(user_id=current_user.id).all()
+    """API endpoint for calendar events - show all users' events."""
+    # Get ALL events, not just current user's
+    events = Event.query.all()
     events_list = []
     
     for event in events:
@@ -164,8 +164,13 @@ def api_events():
             joined_user = User.query.get(event.joined_user_id)
             joined_username = joined_user.username if joined_user else None
         
-        # Get the event owner's color scheme - using 'event_owner' from the relationship
-        color_scheme = event.event_owner.color_scheme if event.event_owner else 'purple'
+        # Get the event owner's color scheme and username
+        owner = event.event_owner
+        color_scheme = owner.color_scheme if owner else 'purple'
+        owner_username = owner.username if owner else 'Unknown'
+        
+        # Determine if current user is the owner
+        is_owner = (event.user_id == current_user.id)
             
         event_dict = {
             'id': event.id,
@@ -178,7 +183,10 @@ def api_events():
             'joined_user_id': event.joined_user_id,
             'joined_username': joined_username,
             'className': f"{event.event_type}-{color_scheme if event.event_type == 'solo' else 'joined'}",
-            'color_scheme': color_scheme
+            'color_scheme': color_scheme,
+            'owner_id': event.user_id,
+            'owner_username': owner_username,
+            'is_owner': is_owner  # Add this for frontend to know if user can edit/delete
         }
         
         # Set color based on event type
@@ -200,6 +208,10 @@ def api_events():
                 event_dict['color'] = '#ffd7b5'  # coral
                 event_dict['borderColor'] = '#f9a95d'
             event_dict['textColor'] = '#4a4a4a'
+        
+        # If not owner, slightly fade the event
+        if not is_owner:
+            event_dict['className'] += ' other-user-event'
         
         events_list.append(event_dict)
     

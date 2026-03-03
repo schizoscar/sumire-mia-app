@@ -4,27 +4,26 @@ from app.extensions import db
 from app.models.task import Task
 from app.routes import todos_bp
 from datetime import datetime
+from sqlalchemy import case
 
 @todos_bp.route('/')
 @login_required
 def index():
-    """To-do list view."""
-    from sqlalchemy import case
-    
-    # Order by: completed status, then by completed_at (for completed tasks) or created_at
-    tasks = Task.query.filter_by(user_id=current_user.id).order_by(
+    """To-do list view - show all tasks from all users."""
+    # Show ALL tasks, ordered by completion status and date
+    tasks = Task.query.order_by(
         Task.completed.asc(),  # Incomplete first
         case(
             (Task.completed == True, Task.completed_at),
             else_=Task.created_at
-        ).desc()  # Apply DESC outside the case
+        ).desc()  # Then by completed date (for completed) or created date (for incomplete)
     ).all()
     return render_template('todos/index.html', title='To-Do List', tasks=tasks)
 
 @todos_bp.route('/add', methods=['GET', 'POST'])
 @login_required
 def add():
-    """Add new task."""
+    """Add new task - owned by current user."""
     if request.method == 'POST':
         title = request.form.get('title')
         description = request.form.get('description')
@@ -52,11 +51,11 @@ def add():
 @todos_bp.route('/edit/<int:task_id>', methods=['GET', 'POST'])
 @login_required
 def edit(task_id):
-    """Edit task."""
+    """Edit task - only owner can edit."""
     task = Task.query.get_or_404(task_id)
     
     if task.user_id != current_user.id:
-        flash('You cannot edit this task.', 'error')
+        flash('You can only edit your own tasks.', 'error')
         return redirect(url_for('todos.index'))
     
     if request.method == 'POST':
@@ -79,11 +78,12 @@ def edit(task_id):
 @todos_bp.route('/toggle/<int:task_id>')
 @login_required
 def toggle(task_id):
-    """Toggle task completion."""
+    """Toggle task completion - only owner can toggle."""
     task = Task.query.get_or_404(task_id)
     
+    # Only allow toggling if user owns the task
     if task.user_id != current_user.id:
-        flash('You cannot modify this task.', 'error')
+        flash('You can only modify your own tasks.', 'error')
         return redirect(url_for('todos.index'))
     
     task.completed = not task.completed
@@ -98,14 +98,53 @@ def toggle(task_id):
 @todos_bp.route('/delete/<int:task_id>')
 @login_required
 def delete(task_id):
-    """Delete task."""
+    """Delete task - only owner can delete."""
     task = Task.query.get_or_404(task_id)
     
     if task.user_id != current_user.id:
-        flash('You cannot delete this task.', 'error')
+        flash('You can only delete your own tasks.', 'error')
         return redirect(url_for('todos.index'))
     
     db.session.delete(task)
     db.session.commit()
     flash('Task deleted successfully!', 'success')
     return redirect(url_for('todos.index'))
+
+@todos_bp.route('/api/tasks')
+@login_required
+def api_tasks():
+    """API endpoint for tasks - show all users' tasks."""
+    # Get ALL tasks
+    tasks = Task.query.order_by(
+        Task.completed.asc(),
+        Task.created_at.desc()
+    ).all()
+    
+    tasks_list = []
+    for task in tasks:
+        # Get the owner's info
+        owner = task.task_owner
+        owner_username = owner.username if owner else 'Unknown'
+        color_scheme = owner.color_scheme if owner else 'purple'
+        
+        # Determine if current user is the owner
+        is_owner = (task.user_id == current_user.id)
+        
+        task_dict = {
+            'id': task.id,
+            'title': task.title,
+            'description': task.description,
+            'completed': task.completed,
+            'completed_at': task.completed_at.isoformat() if task.completed_at else None,
+            'due_date': task.due_date.isoformat() if task.due_date else None,
+            'priority': task.priority,
+            'owner_id': task.user_id,
+            'owner_username': owner_username,
+            'color_scheme': color_scheme,
+            'is_owner': is_owner,
+            'className': 'other-user-task' if not is_owner else ''
+        }
+        
+        tasks_list.append(task_dict)
+    
+    return jsonify(tasks_list)

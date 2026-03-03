@@ -15,7 +15,8 @@
         
         <div class="reminder-list">
             {% for reminder in reminders %}
-            <div class="reminder-item">
+            {% set is_owner = (reminder.user_id == current_user.id) %}
+            <div class="reminder-item {% if not is_owner %}other-user-reminder{% endif %}">
                 <div class="d-flex align-items-start justify-content-between">
                     <div class="d-flex">
                         <span class="color-dot" style="background-color: 
@@ -25,8 +26,15 @@
                             {% elif reminder.reminder_owner.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
                             {% endif %}"></span>
                         <div class="reminder-content ms-3">
-                            <h5 class="reminder-title">{{ reminder.title }}</h5>
+                            <h5 class="reminder-title">
+                                {{ reminder.title }}
+                                {% if not is_owner %}
+                                <small class="text-muted">(by {{ reminder.reminder_owner.username }})</small>
+                                {% endif %}
+                            </h5>
+                            {% if reminder.message %}
                             <p class="reminder-message">{{ reminder.message }}</p>
+                            {% endif %}
                             <div class="reminder-meta">
                                 <small>
                                     <i class="bi bi-clock"></i> {{ reminder.reminder_time.strftime('%d/%m/%y %I:%M %p') }}
@@ -34,16 +42,32 @@
                                 {% if reminder.repeat != 'none' %}
                                 <span class="reminder-badge">repeats {{ reminder.repeat }}</span>
                                 {% endif %}
+                                {% if not is_owner %}
+                                <span class="reminder-badge owner-badge">
+                                    <i class="bi bi-person"></i> {{ reminder.reminder_owner.username }}
+                                </span>
+                                {% endif %}
+                                {% if reminder.is_sent %}
+                                <span class="reminder-badge sent-badge">
+                                    <i class="bi bi-check-circle"></i> sent
+                                </span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
                     <div class="reminder-actions">
+                        {% if is_owner %}
                         <a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}" class="btn-edit" title="edit reminder">
                             <i class="bi bi-pencil"></i>
                         </a>
                         <a href="{{ url_for('reminders.delete', reminder_id=reminder.id) }}" class="btn-delete" onclick="return confirm('Delete this reminder?')" title="delete reminder">
                             <i class="bi bi-trash"></i>
                         </a>
+                        {% else %}
+                        <span class="btn-view" title="Created by {{ reminder.reminder_owner.username }}">
+                            <i class="bi bi-eye"></i>
+                        </span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -68,6 +92,25 @@
     color: var(--pastel-lavender);
 }
 
+/* Fix button width on desktop */
+@media (min-width: 769px) {
+    .btn-primary.w-md-auto {
+        width: auto !important;
+        min-width: 120px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .btn-primary.w-100.w-md-auto {
+        width: 100% !important;
+    }
+    
+    .header-chevron {
+        margin-right: 2px;
+    }
+}
+
 /* Reminder item styling */
 .reminder-item {
     background: white;
@@ -83,6 +126,18 @@
     box-shadow: var(--shadow-soft);
 }
 
+/* Other users' reminders styling */
+.reminder-item.other-user-reminder {
+    background: #fafafa;
+    opacity: 0.9;
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.reminder-item.other-user-reminder:hover {
+    opacity: 1;
+    background: #f8f9fa;
+}
+
 /* Color dot */
 .color-dot {
     display: inline-block;
@@ -93,7 +148,7 @@
     margin-top: 3px;
 }
 
-/* Reminder content - OVERRIDE lowercase forcing */
+/* Reminder content */
 .reminder-content {
     flex: 1;
 }
@@ -104,6 +159,12 @@
     color: var(--charcoal);
     margin-bottom: 4px;
     text-transform: none !important;
+}
+
+.reminder-title small {
+    font-size: 0.85rem;
+    font-weight: normal;
+    color: var(--warm-gray);
 }
 
 .reminder-message {
@@ -143,16 +204,33 @@
     font-size: 0.7rem;
     font-weight: 500;
     text-transform: none !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
-/* Action buttons - matching todos page exactly */
+.owner-badge {
+    background: rgba(230, 230, 250, 0.5);
+    border: 1px solid var(--pastel-lavender);
+}
+
+.owner-badge i {
+    font-size: 0.65rem;
+}
+
+.sent-badge {
+    background: rgba(204, 213, 174, 0.3);
+    color: #4a6b4a;
+}
+
+/* Action buttons - matching todos and user management */
 .reminder-actions {
     display: flex;
     gap: 6px;
     margin-left: 12px;
 }
 
-.btn-edit, .btn-delete {
+.btn-edit, .btn-delete, .btn-view {
     width: 32px;
     height: 32px;
     display: flex;
@@ -189,7 +267,19 @@
     transform: translateY(-2px);
 }
 
-.btn-edit i, .btn-delete i {
+.btn-view {
+    background: transparent;
+    border: 1px solid var(--pastel-lavender);
+    color: var(--charcoal);
+    opacity: 0.6;
+    cursor: default;
+}
+
+.btn-view i {
+    font-size: 0.9rem;
+}
+
+.btn-edit i, .btn-delete i, .btn-view i {
     font-size: 0.9rem;
 }
 
@@ -215,16 +305,31 @@
     text-transform: none !important;
 }
 
+/* Desktop tooltips */
+@media (min-width: 769px) {
+    .btn-edit, .btn-delete {
+        position: relative;
+    }
+    
+    .btn-edit:hover::after,
+    .btn-delete:hover::after {
+        content: attr(title);
+        position: absolute;
+        bottom: -25px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--charcoal);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 4px;
+        font-size: 0.7rem;
+        white-space: nowrap;
+        z-index: 1000;
+    }
+}
+
 /* Mobile styles */
 @media (max-width: 768px) {
-    .btn-primary.w-100.w-md-auto {
-        width: 100% !important;
-    }
-    
-    .header-chevron {
-        margin-right: 2px;
-    }
-    
     .reminder-item .d-flex.align-items-start {
         flex-direction: column;
         gap: 15px;
@@ -241,21 +346,42 @@
     }
     
     .reminder-meta {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 4px;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+    }
+    
+    .reminder-title small {
+        display: block;
+        margin-top: 2px;
+    }
+    
+    .btn-edit, .btn-delete, .btn-view {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .btn-edit i, .btn-delete i, .btn-view i {
+        font-size: 1rem;
+    }
+    
+    /* No tooltips on mobile */
+    .btn-edit:hover::after,
+    .btn-delete:hover::after {
+        display: none;
     }
 }
 
 @media (max-width: 480px) {
     .reminder-actions {
         margin-left: 0;
-        justify-content: space-between;
+        justify-content: flex-end;
     }
     
-    .btn-edit, .btn-delete {
-        flex: 1;
-        height: 36px;
+    .reminder-meta {
+        flex-direction: column;
+        align-items: flex-start;
     }
 }
 </style>

@@ -15,10 +15,12 @@
         
         <div class="task-list">
             {% for task in tasks %}
-            <div class="task-item {% if task.completed %}completed{% endif %}">
+            {% set is_owner = (task.user_id == current_user.id) %}
+            <div class="task-item {% if task.completed %}completed{% endif %} {% if not is_owner %}other-user-task{% endif %}">
                 <!-- Top row: Checkbox, color dot, task title, and status (desktop only) -->
                 <div class="d-flex align-items-start w-100">
-                    <!-- Checkbox -->
+                    <!-- Checkbox - only clickable if owner -->
+                    {% if is_owner %}
                     <a href="{{ url_for('todos.toggle', task_id=task.id) }}" class="text-decoration-none me-3 mt-1">
                         {% if task.completed %}
                         <i class="bi bi-check-circle-fill" style="color: var(--sage-green); font-size: 1.5rem;"></i>
@@ -26,6 +28,15 @@
                         <i class="bi bi-circle" style="color: var(--pastel-lavender); font-size: 1.5rem;"></i>
                         {% endif %}
                     </a>
+                    {% else %}
+                    <span class="me-3 mt-1">
+                        {% if task.completed %}
+                        <i class="bi bi-check-circle-fill" style="color: var(--sage-green); font-size: 1.5rem; opacity: 0.6;"></i>
+                        {% else %}
+                        <i class="bi bi-circle" style="color: var(--pastel-lavender); font-size: 1.5rem; opacity: 0.6;"></i>
+                        {% endif %}
+                    </span>
+                    {% endif %}
                     
                     <!-- Color dot -->
                     <span class="color-dot mt-2" style="background-color: 
@@ -37,7 +48,12 @@
                     
                     <!-- Task title and description -->
                     <div class="ms-3 flex-grow-1">
-                        <h6 class="task-title mb-1 {% if task.completed %}text-decoration-line-through{% endif %}">{{ task.title }}</h6>
+                        <h6 class="task-title mb-1 {% if task.completed %}text-decoration-line-through{% endif %}">
+                            {{ task.title }}
+                            {% if not is_owner %}
+                            <small class="text-muted">(by {{ task.task_owner.username }})</small>
+                            {% endif %}
+                        </h6>
                         {% if task.description %}
                         <p class="task-description mb-1">{{ task.description }}</p>
                         {% endif %}
@@ -70,8 +86,9 @@
                     <span class="badge status-badge mobile-only" style="background: rgba(204, 213, 174, 0.3); color: var(--charcoal);">completed</span>
                     {% endif %}
                     
-                    <!-- Buttons - icons only, exactly like user management -->
+                    <!-- Action buttons - only show for owner -->
                     <div class="btn-group" role="group">
+                        {% if is_owner %}
                         <a href="{{ url_for('todos.edit', task_id=task.id) }}" 
                            class="btn btn-sm btn-info"
                            title="edit task">
@@ -83,6 +100,11 @@
                            title="delete task">
                             <i class="bi bi-trash"></i>
                         </a>
+                        {% else %}
+                        <span class="btn-view" title="Created by {{ task.task_owner.username }}">
+                            <i class="bi bi-eye"></i>
+                        </span>
+                        {% endif %}
                     </div>
                 </div>
             </div>
@@ -94,6 +116,66 @@
 </div>
 
 <style>
+/* Add these new styles to your existing CSS */
+
+/* Other users' tasks styling */
+.task-item.other-user-task {
+    background: #fafafa;
+    opacity: 0.9;
+    border-color: rgba(0, 0, 0, 0.05);
+}
+
+.task-item.other-user-task:hover {
+    opacity: 1;
+    background: #f8f9fa;
+}
+
+.task-item.other-user-task .color-dot {
+    opacity: 0.7;
+}
+
+.task-title small {
+    font-size: 0.8rem;
+    font-weight: normal;
+    color: var(--warm-gray);
+}
+
+/* View button for other users' tasks */
+.btn-view {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    background: transparent;
+    border: 1px solid var(--pastel-lavender);
+    color: var(--charcoal);
+    opacity: 0.6;
+    cursor: default;
+}
+
+.btn-view i {
+    font-size: 0.9rem;
+}
+
+@media (max-width: 768px) {
+    .btn-view {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .btn-view i {
+        font-size: 1rem;
+    }
+    
+    .task-title small {
+        display: block;
+        margin-top: 2px;
+    }
+}
+
+/* Rest of your existing CSS remains exactly the same */
 .header-chevron {
     display: inline-block;
     margin-right: 4px;
@@ -163,7 +245,7 @@
     font-size: 0.85rem;
     line-height: 1.4;
     margin-top: 2px;
-    white-space: pre-wrap; /* This preserves both line breaks and spaces */
+    white-space: pre-wrap;
 }
 
 /* Color dot styling */
@@ -198,7 +280,7 @@
     }
 }
 
-/* Button group styling - matching user management EXACTLY */
+/* Button group styling */
 .btn-group {
     display: flex;
     gap: 5px;
@@ -220,7 +302,7 @@
     transform: translateY(-2px);
 }
 
-/* Button colors - matching user management EXACTLY */
+/* Button colors */
 .btn-info {
     background: var(--pastel-lavender);
     border-color: var(--soft-lavender);
@@ -253,12 +335,10 @@
         width: 100%;
     }
     
-    /* Make task title and description take available space */
     .task-item .flex-grow-1 {
         flex: 1;
     }
     
-    /* Buttons styling - compact on desktop */
     .task-actions {
         display: flex;
         justify-content: flex-end;
@@ -273,12 +353,13 @@
         font-size: 0.85rem;
     }
     
-    /* Tooltips on hover */
-    .btn-group .btn {
+    .btn-group .btn,
+    .btn-view {
         position: relative;
     }
     
-    .btn-group .btn:hover::after {
+    .btn-group .btn:hover::after,
+    .btn-view:hover::after {
         content: attr(title);
         position: absolute;
         bottom: -25px;
@@ -302,12 +383,10 @@
         gap: 12px;
     }
     
-    /* Top row with checkbox, color dot, task info */
     .task-item .d-flex.align-items-start {
         width: 100%;
     }
     
-    /* Task title and description */
     .task-item .flex-grow-1 {
         flex: 1;
         min-width: 150px;
@@ -317,7 +396,6 @@
         font-size: 0.8rem;
     }
     
-    /* Bottom row with status and buttons */
     .task-actions {
         width: 100%;
         display: flex;
@@ -326,30 +404,30 @@
         gap: 10px;
     }
     
-    /* Status badge on the left */
     .status-badge.mobile-only {
         margin: 0;
         flex-shrink: 0;
     }
     
-    /* Buttons on the right - exactly like user management */
     .btn-group {
         flex-direction: row;
         gap: 8px;
         margin-left: auto;
     }
     
-    .btn-group .btn {
+    .btn-group .btn,
+    .btn-view {
         width: auto;
         padding: 8px 12px;
     }
     
-    .btn-group .btn i {
+    .btn-group .btn i,
+    .btn-view i {
         font-size: 1rem;
     }
     
-    /* No tooltips needed on mobile */
-    .btn-group .btn:hover::after {
+    .btn-group .btn:hover::after,
+    .btn-view:hover::after {
         display: none;
     }
 }
@@ -360,7 +438,8 @@
         min-width: 120px;
     }
     
-    .btn-group .btn {
+    .btn-group .btn,
+    .btn-view {
         padding: 8px 10px;
     }
 }

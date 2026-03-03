@@ -59,9 +59,9 @@
             eventColor: eventColor,
             eventTextColor: '#4a4a4a',
             // Responsive height settings
-            height: window.innerWidth <= 768 ? 'auto' : 'auto', // Let content determine height
+            height: window.innerWidth <= 768 ? 'auto' : 'auto',
             contentHeight: window.innerWidth <= 768 ? 'auto' : 'auto',
-            aspectRatio: window.innerWidth <= 768 ? 1.5 : 1.5, // Keep consistent ratio
+            aspectRatio: window.innerWidth <= 768 ? 1.5 : 1.5,
             expandRows: true,
             dayMaxEvents: window.innerWidth <= 768 ? 2 : false,
             dayMaxEventRows: window.innerWidth <= 768 ? 2 : false,
@@ -80,11 +80,18 @@
                     info.el.setAttribute('data-type', 'joined');
                 } else {
                     info.el.setAttribute('data-type', 'solo');
-                    const color = info.event.extendedProps.color || '{{ current_user.color_scheme }}';
+                    const color = info.event.extendedProps.color_scheme || '{{ current_user.color_scheme }}';
                     info.el.setAttribute('data-color', color);
                 }
+
+                // Add class and tooltip for other users' events
+                if (!info.event.extendedProps.is_owner) {
+                    info.el.classList.add('other-user-event');
+                    info.el.setAttribute('title', `Created by: ${info.event.extendedProps.owner_username}`);
+                }
+
                 info.el.classList.remove('fc-h-event', 'fc-v-event', 'fc-daygrid-event');
-                console.log('Event mounted:', info.event.title, 'Type:', info.el.getAttribute('data-type'), 'Color:', info.el.getAttribute('data-color'));
+                console.log('Event mounted:', info.event.title, 'Owner:', info.event.extendedProps.owner_username, 'Is owner:', info.event.extendedProps.is_owner);
             },
 
             buttonText: {
@@ -100,7 +107,6 @@
 
         // Add window resize handler for responsive width
         function handleCalendarResize() {
-            // Just update the calendar size, don't set fixed widths
             if (calendar) {
                 calendar.updateSize();
             }
@@ -124,9 +130,12 @@
         });
     });
 
-    // Custom event dialog function (defined outside calendar initialization)
+    // Custom event dialog function
     function showEventDialog(event) {
-        // ... (keep your existing showEventDialog function exactly as is) ...
+        // Only show edit/delete buttons if user owns the event
+        const isOwner = event.extendedProps.is_owner;
+        const ownerUsername = event.extendedProps.owner_username || 'Unknown';
+
         const modalHtml = `
             <div class="modal fade" id="eventModal" tabindex="-1">
                 <div class="modal-dialog modal-dialog-centered">
@@ -137,6 +146,10 @@
                         </div>
                         <div class="modal-body" style="padding: 20px;">
                             ${event.extendedProps.description ? `<p style="color: var(--warm-gray); margin-bottom: 15px;">${event.extendedProps.description}</p>` : ''}
+                            <p style="color: var(--charcoal); margin-bottom: 5px;">
+                                <i class="bi bi-person me-2" style="color: var(--pastel-lavender);"></i>
+                                Created by: ${ownerUsername}
+                            </p>
                             <p style="color: var(--charcoal); margin-bottom: 5px;">
                                 <i class="bi bi-calendar me-2" style="color: var(--pastel-lavender);"></i>
                                 Start: ${new Date(event.start).toLocaleString('en-GB', {
@@ -163,18 +176,20 @@
                                     Joined event
                                 </p>` :
                 `<p style="color: var(--charcoal); margin-top: 10px;">
-                                    <i class="bi bi-person me-2" style="color: ${event.extendedProps.color === 'purple' ? '#c084fc' : '#f9a8d4'};"></i>
+                                    <i class="bi bi-person me-2" style="color: ${event.extendedProps.color_scheme === 'purple' ? '#c084fc' : '#f9a8d4'};"></i>
                                     Solo event
                                 </p>`
             }
                         </div>
                         <div class="modal-footer" style="border-top: 2px solid var(--pastel-lavender);">
-                            <a href="/calendar/edit/${event.id}" class="btn btn-primary">
-                                <i class="bi bi-pencil"></i> edit
-                            </a>
-                            <button type="button" class="btn btn-danger" onclick="confirmDelete(${event.id})">
-                                <i class="bi bi-trash"></i> delete
-                            </button>
+                            ${isOwner ? `
+                                <a href="/calendar/edit/${event.id}" class="btn btn-primary">
+                                    <i class="bi bi-pencil"></i> edit
+                                </a>
+                                <button type="button" class="btn btn-danger" onclick="confirmDelete(${event.id})">
+                                    <i class="bi bi-trash"></i> delete
+                                </button>
+                            ` : ''}
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                                 close
                             </button>
@@ -533,6 +548,68 @@
         width: 90px !important;
         min-width: 90px !important;
     }
+}
+/* Other users' events styling */
+.fc-event.other-user-event {
+    opacity: 0.8;
+    filter: brightness(0.95);
+}
+
+.fc-event.other-user-event:hover {
+    opacity: 1;
+    filter: brightness(1);
+}
+
+/* Add a subtle pattern to distinguish other users' events */
+.fc-event.other-user-event[data-type="solo"] {
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 8px,
+        rgba(255, 255, 255, 0.3) 8px,
+        rgba(255, 255, 255, 0.3) 16px
+    ) !important;
+}
+
+/* Ensure the pattern doesn't override the background color */
+.fc-event.other-user-event[data-type="solo"][data-color="purple"] {
+    background: repeating-linear-gradient(
+        45deg,
+        #e6e6fa,
+        #e6e6fa 8px,
+        rgba(255, 255, 255, 0.4) 8px,
+        rgba(255, 255, 255, 0.4) 16px
+    ) !important;
+}
+
+.fc-event.other-user-event[data-type="solo"][data-color="pink"] {
+    background: repeating-linear-gradient(
+        45deg,
+        #ffdab9,
+        #ffdab9 8px,
+        rgba(255, 255, 255, 0.4) 8px,
+        rgba(255, 255, 255, 0.4) 16px
+    ) !important;
+}
+
+.fc-event.other-user-event[data-type="solo"][data-color="blue"] {
+    background: repeating-linear-gradient(
+        45deg,
+        #b8e2f2,
+        #b8e2f2 8px,
+        rgba(255, 255, 255, 0.4) 8px,
+        rgba(255, 255, 255, 0.4) 16px
+    ) !important;
+}
+
+.fc-event.other-user-event[data-type="solo"][data-color="orange"] {
+    background: repeating-linear-gradient(
+        45deg,
+        #ffd7b5,
+        #ffd7b5 8px,
+        rgba(255, 255, 255, 0.4) 8px,
+        rgba(255, 255, 255, 0.4) 16px
+    ) !important;
 }
 </style>
 {% endblock %}
