@@ -164,12 +164,8 @@ def api_events():
             joined_user = User.query.get(event.joined_user_id)
             joined_username = joined_user.username if joined_user else None
         
-        # Get the event owner's color scheme - using 'owner' instead of 'user'
-        color_scheme = 'purple'  # default
-        if hasattr(event, 'owner') and event.owner:
-            color_scheme = event.owner.color_scheme
-        elif hasattr(event, 'user') and event.user:
-            color_scheme = event.user.color_scheme
+        # Get the event owner's color scheme - using 'event_owner' from the relationship
+        color_scheme = event.event_owner.color_scheme if event.event_owner else 'purple'
             
         event_dict = {
             'id': event.id,
@@ -181,7 +177,8 @@ def api_events():
             'event_type': event.event_type,
             'joined_user_id': event.joined_user_id,
             'joined_username': joined_username,
-            'className': f"{event.event_type}-{color_scheme if event.event_type == 'solo' else 'joined'}"
+            'className': f"{event.event_type}-{color_scheme if event.event_type == 'solo' else 'joined'}",
+            'color_scheme': color_scheme
         }
         
         # Set color based on event type
@@ -193,9 +190,15 @@ def api_events():
             if color_scheme == 'purple':
                 event_dict['color'] = '#e6e6fa'  # lavender
                 event_dict['borderColor'] = '#c084fc'
-            else:
+            elif color_scheme == 'pink':
                 event_dict['color'] = '#ffdab9'  # peach
                 event_dict['borderColor'] = '#f9a8d4'
+            elif color_scheme == 'blue':
+                event_dict['color'] = '#b8e2f2'  # sky blue
+                event_dict['borderColor'] = '#7aa5c7'
+            elif color_scheme == 'orange':
+                event_dict['color'] = '#ffd7b5'  # coral
+                event_dict['borderColor'] = '#f9a95d'
             event_dict['textColor'] = '#4a4a4a'
         
         events_list.append(event_dict)

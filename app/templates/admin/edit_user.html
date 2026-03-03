@@ -24,15 +24,18 @@
                                value="{{ user.email }}" required
                         <small class="form-text user-hint">Valid email address required</small>
                     </div>
-                    
+
                     <div class="mb-3">
-                        <label for="color_scheme" class="form-label">> COLOR SCHEME</label>
-                        <select class="form-control" id="color_scheme" name="color_scheme" 
-                                style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);">
+                        <label for="color_scheme" class="form-label">> color scheme</label>
+                        <select class="form-control" id="color_scheme" name="color_scheme" required>
                             <option value="purple" {% if user.color_scheme == 'purple' %}selected{% endif %} 
-                                    style="color: var(--neon-purple);">💜 PURPLE</option>
+                                    style="background: #e6e6fa; color: #4a4a4a;">💜 lavender</option>
                             <option value="pink" {% if user.color_scheme == 'pink' %}selected{% endif %} 
-                                    style="color: var(--neon-pink);">🩷 PINK</option>
+                                    style="background: #ffdab9; color: #4a4a4a;">🩷 peach</option>
+                            <option value="blue" {% if user.color_scheme == 'blue' %}selected{% endif %} 
+                                    style="background: #b8e2f2; color: #4a4a4a;">💙 sky blue</option>
+                            <option value="orange" {% if user.color_scheme == 'orange' %}selected{% endif %} 
+                                    style="background: #ffd7b5; color: #4a4a4a;">🧡 coral</option>
                         </select>
                         <small class="form-text user-hint">Determines theme color for this user</small>
                     </div>

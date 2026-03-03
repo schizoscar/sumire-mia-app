@@ -25,19 +25,14 @@ class Event(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # Relationships with back_populates
-    owner = db.relationship('User', foreign_keys=[user_id], back_populates='events')
-    joined_participant = db.relationship('User', foreign_keys=[joined_user_id], back_populates='events_joined')
+    # No back_populates - let the User model handle the relationship
     
     def to_dict(self):
         """Convert to dictionary for JSON responses."""
-        # Get the user/owner to access color scheme
-        color_scheme = 'purple'  # default
-        if hasattr(self, 'owner') and self.owner:
-            color_scheme = self.owner.color_scheme
-        elif hasattr(self, 'user') and self.user:
-            color_scheme = self.user.color_scheme
-    
+        # Get the user to access color scheme
+        from app.models.user import User
+        user = User.query.get(self.user_id)
+        
         return {
             'id': self.id,
             'title': self.title,
@@ -48,7 +43,7 @@ class Event(db.Model):
             'user_id': self.user_id,
             'event_type': self.event_type,
             'joined_user_id': self.joined_user_id,
-            'color': color_scheme
+            'color': user.color_scheme if user else 'purple'
         }
     
     def __repr__(self):

@@ -26,6 +26,8 @@ class Reminder(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # No relationship defined here - let User model handle it
+    
     def should_send(self):
         """Check if reminder should be sent."""
         now = datetime.utcnow()

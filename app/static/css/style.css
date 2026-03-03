@@ -1448,3 +1448,113 @@ input[type="radio"] {
 .custom-control-label::after {
     display: none !important;
 }
+
+/* ===== COLOR VARIABLES FOR NEW THEMES ===== */
+:root {
+    --pastel-blue: #b8e2f2;
+    --pastel-orange: #ffd7b5;
+    --soft-blue: #7aa5c7;
+    --soft-orange: #f9a95d;
+}
+
+/* Color dots for tasks and reminders */
+.color-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+    .color-dot.purple {
+        background: #e6e6fa;
+        border: 2px solid #c084fc;
+    }
+
+    .color-dot.pink {
+        background: #ffdab9;
+        border: 2px solid #f9a8d4;
+    }
+
+    .color-dot.blue {
+        background: #b8e2f2;
+        border: 2px solid #7aa5c7;
+    }
+
+    .color-dot.orange {
+        background: #ffd7b5;
+        border: 2px solid #f9a95d;
+    }
+
+/* Small color dots for inline display */
+.color-dot-small {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Task and reminder item styling */
+.task-item, .reminder-item {
+    padding: 12px;
+    border-bottom: 1px solid rgba(230, 230, 250, 0.3);
+    transition: background 0.2s ease;
+}
+
+    .task-item:hover, .reminder-item:hover {
+        background: rgba(230, 230, 250, 0.2);
+    }
+
+    .task-item:last-child, .reminder-item:last-child {
+        border-bottom: none;
+    }
+
+/* Dashboard stat cards */
+.stat-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(230, 230, 250, 0.5);
+}
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-hover);
+        border-color: var(--pastel-lavender);
+    }
+
+.stat-icon {
+    font-size: 2.5rem;
+    color: var(--pastel-lavender);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.2;
+    margin: 10px 0;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--warm-gray);
+    letter-spacing: 0.3px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .stat-number {
+        font-size: 2rem;
+    }
+
+    .task-item, .reminder-item {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+    }
+
+        .task-item .badge, .reminder-item .badge {
+            margin-left: 28px;
+        }
+}

@@ -3,80 +3,111 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="glitch mb-4" data-text="> SYSTEM ACCESS: {{ current_user.username }}">
-            welcome {{ current_user.username }}
-        </h1>
-        <p class="text-secondary">user dashboard</p>
+        <h1 class="mb-2">welcome, {{ current_user.username }}</h1>
+        <p class="text-secondary" style="color: var(--warm-gray) !important;">user dashboard</p>
     </div>
 </div>
 
-<div class="row mt-4">
-    <!-- Quick Stats -->
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="fas fa-calendar-check fa-3x mb-3" style="color: var(--neon-purple);"></i>
-                <div class="stat-number">3</div>
-                <div class="stat-label">today's events</div>
-                <a href="{{ url_for('calendar.index') }}" class="btn btn-primary mt-3">
-                    <i class="fas fa-eye"></i> view calendar
-                </a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="fas fa-tasks fa-3x mb-3" style="color: var(--neon-pink);"></i>
-                <div class="stat-number">5</div>
-                <div class="stat-label">tasks pending</div>
-                <a href="{{ url_for('todos.index') }}" class="btn btn-primary mt-3">
-                    <i class="fas fa-eye"></i> view tasks
-                </a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-4 mb-3">
-        <div class="card text-center h-100">
-            <div class="card-body">
-                <i class="fas fa-bell fa-3x mb-3" style="color: var(--neon-green);"></i>
-                <div class="stat-number">2</div>
-                <div class="stat-label">active reminders</div>
-                <a href="{{ url_for('reminders.index') }}" class="btn btn-primary mt-3">
-                    <i class="fas fa-eye"></i> view reminders
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Quick Add Section -->
+<!-- Recent Tasks Section -->
 <div class="row mt-4">
     <div class="col-12">
         <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0 glitch" data-text="quick access">> quick access</h5>
+            <div class="card-header d-flex flex-wrap align-items-center justify-content-between">
+                <h5 class="mb-0">
+                    <i class="bi bi-list-check me-2" style="color: var(--pastel-lavender);"></i>
+                    recent tasks
+                </h5>
+                <a href="{{ url_for('todos.index') }}" class="btn btn-sm btn-primary mt-2 mt-sm-0">
+                    view all <i class="bi bi-arrow-right ms-1"></i>
+                </a>
             </div>
             <div class="card-body">
-                <div class="row">
-                    <div class="col-md-4 mb-2">
-                        <a href="{{ url_for('calendar.add') }}" class="btn btn-primary w-100">
-                            <i class="fas fa-plus-circle me-2"></i>new event
+                {% if recent_tasks %}
+                    {% for task in recent_tasks %}
+                    <div class="task-item d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <span class="color-dot" style="background-color: 
+                                {% if task.task_owner.color_scheme == 'purple' %}#e6e6fa; border: 2px solid #c084fc;
+                                {% elif task.task_owner.color_scheme == 'pink' %}#ffdab9; border: 2px solid #f9a8d4;
+                                {% elif task.task_owner.color_scheme == 'blue' %}#b8e2f2; border: 2px solid #7aa5c7;
+                                {% elif task.task_owner.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
+                                {% endif %}"></span>
+                            <div class="ms-3">
+                                <h6 class="mb-0 {% if task.completed %}text-decoration-line-through text-secondary{% endif %}">{{ task.title }}</h6>
+                                <small class="text-secondary">
+                                    {% if task.due_date %}
+                                        due {{ task.due_date.strftime('%d/%m/%y') }}
+                                    {% else %}
+                                        no due date
+                                    {% endif %}
+                                </small>
+                            </div>
+                        </div>
+                        <div>
+                            {% if not task.completed %}
+                            <span class="badge" style="background: rgba(230, 230, 250, 0.3); color: var(--charcoal);">pending</span>
+                            {% else %}
+                            <span class="badge" style="background: rgba(204, 213, 174, 0.3); color: var(--charcoal);">completed</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p class="text-center py-4" style="color: var(--warm-gray);">no tasks yet. create your first task!</p>
+                    <div class="text-center">
+                        <a href="{{ url_for('todos.add') }}" class="btn btn-sm btn-primary">
+                            <i class="bi bi-plus-circle"></i> add task
                         </a>
                     </div>
-                    <div class="col-md-4 mb-2">
-                        <a href="{{ url_for('todos.add') }}" class="btn btn-primary w-100">
-                            <i class="fas fa-plus-circle me-2"></i>new task
-                        </a>
-                    </div>
-                    <div class="col-md-4 mb-2">
-                        <a href="{{ url_for('reminders.add') }}" class="btn btn-primary w-100">
-                            <i class="fas fa-plus-circle me-2"></i>new reminder
-                        </a>
-                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Stats -->
+<div class="row mt-4">
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card text-center h-100">
+            <div class="card-body">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-calendar-heart"></i>
                 </div>
+                <div class="stat-number">{{ today_events }}</div>
+                <div class="stat-label">today's events</div>
+                <a href="{{ url_for('calendar.index') }}" class="btn btn-sm btn-primary mt-3">
+                    view calendar <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card text-center h-100">
+            <div class="card-body">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-check2-square"></i>
+                </div>
+                <div class="stat-number">{{ pending_tasks }}</div>
+                <div class="stat-label">tasks pending</div>
+                <a href="{{ url_for('todos.index') }}" class="btn btn-sm btn-primary mt-3">
+                    view tasks <i class="bi bi-arrow-right ms-1"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4 mb-3">
+        <div class="card stat-card text-center h-100">
+            <div class="card-body">
+                <div class="stat-icon mb-2">
+                    <i class="bi bi-bell"></i>
+                </div>
+                <div class="stat-number">{{ upcoming_reminders }}</div>
+                <div class="stat-label">upcoming reminders</div>
+                <a href="{{ url_for('reminders.index') }}" class="btn btn-sm btn-primary mt-3">
+                    view reminders <i class="bi bi-arrow-right ms-1"></i>
+                </a>
             </div>
         </div>
     </div>
@@ -87,23 +118,159 @@
     <div class="col-12">
         <div class="card">
             <div class="card-header">
-                <h5 class="mb-0 glitch" data-text="> SYSTEM_STATUS">> system status</h5>
+                <h5 class="mb-0">
+                    <i class="bi bi-cpu me-2" style="color: var(--warm-gray);"></i>
+                    system status
+                </h5>
             </div>
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6">
-                        <p><span style="color: var(--neon-green);">> connection:</span> online</p>
-                        <p><span style="color: var(--neon-green);">> database:</span> active</p>
-                        <p><span style="color: var(--neon-green);">> user:</span> {{ current_user.username }}</p>
+                        <p><span style="color: var(--warm-gray);">connection:</span> online</p>
+                        <p><span style="color: var(--warm-gray);">database:</span> active</p>
+                        <p><span style="color: var(--warm-gray);">user:</span> {{ current_user.username }}</p>
                     </div>
                     <div class="col-md-6">
-                        <p><span style="color: var(--neon-purple);">> color scheme:</span> {{ current_user.color_scheme|lower }}</p>
-                        <p><span style="color: var(--neon-purple);">> access level:</span> {% if current_user.is_admin %}admin{% else %}user{% endif %}</p>
-                        <p><span style="color: var(--neon-purple);">> last login:</span> {{ current_user.last_login.strftime('%Y-%m-%d %H:%M') if current_user.last_login else 'FIRST_LOGIN' }}</p>
+                        <p><span style="color: var(--warm-gray);">color scheme:</span> 
+                            <span class="color-dot-small" style="background-color: 
+                                {% if current_user.color_scheme == 'purple' %}#e6e6fa; border: 2px solid #c084fc;
+                                {% elif current_user.color_scheme == 'pink' %}#ffdab9; border: 2px solid #f9a8d4;
+                                {% elif current_user.color_scheme == 'blue' %}#b8e2f2; border: 2px solid #7aa5c7;
+                                {% elif current_user.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
+                                {% endif %}"></span> 
+                            {{ current_user.color_scheme }}
+                        </p>
+                        <p><span style="color: var(--warm-gray);">access level:</span> {% if current_user.is_admin %}admin{% else %}user{% endif %}</p>
+                        <p><span style="color: var(--warm-gray);">last login:</span> {{ current_user.last_login.strftime('%d/%m/%y %H:%M') if current_user.last_login else 'first login' }}</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Color dot styling */
+.color-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.color-dot-small {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+
+/* Task items */
+.task-item {
+    padding: 12px;
+    border-bottom: 1px solid rgba(230, 230, 250, 0.3);
+    transition: background 0.2s ease;
+}
+
+.task-item:hover {
+    background: rgba(230, 230, 250, 0.2);
+}
+
+.task-item:last-child {
+    border-bottom: none;
+}
+
+/* Stat cards */
+.stat-card {
+    transition: all 0.3s ease;
+    border: 1px solid rgba(230, 230, 250, 0.5);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-hover);
+    border-color: var(--pastel-lavender);
+}
+
+.stat-icon {
+    font-size: 2.5rem;
+    color: var(--pastel-lavender);
+}
+
+.stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--charcoal);
+    line-height: 1.2;
+    margin: 10px 0;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    color: var(--warm-gray);
+    letter-spacing: 0.3px;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+}
+
+/* Mobile responsive fixes */
+@media (max-width: 768px) {
+    .card-header {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 10px;
+    }
+    
+    .card-header .btn {
+        width: 100%;
+        margin-top: 5px;
+    }
+    
+    .task-item {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 8px;
+    }
+    
+    .task-item .badge {
+        margin-left: 28px;
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+    }
+    
+    .stat-card {
+        margin-bottom: 15px;
+    }
+}
+
+/* Extra small devices */
+@media (max-width: 480px) {
+    .task-item .d-flex.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+        width: 100%;
+    }
+    
+    .task-item .ms-3 {
+        margin-left: 0 !important;
+        margin-top: 8px;
+    }
+    
+    .task-item .badge {
+        margin-left: 0;
+        align-self: flex-start;
+    }
+}
+</style>
 {% endblock %}

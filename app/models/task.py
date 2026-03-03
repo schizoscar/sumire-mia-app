@@ -26,6 +26,8 @@ class Task(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
+    # No relationship defined here - let User model handle it
+    
     def mark_completed(self):
         """Mark task as completed."""
         self.completed = True

@@ -27,15 +27,21 @@
                                value="{{ current_user.email }}" required>
                     </div>
                     
-                    <div class="mb-3">
-                        <label for="color_scheme" class="form-label">
-                            <i class="bi bi-palette me-2"></i>theme color
-                        </label>
-                        <select class="form-control" id="color_scheme" name="color_scheme">
-                            <option value="purple" {% if current_user.color_scheme == 'purple' %}selected{% endif %}>💜 lavender</option>
-                            <option value="pink" {% if current_user.color_scheme == 'pink' %}selected{% endif %}>🩷 peach</option>
-                        </select>
-                    </div>
+                <div class="mb-3">
+                    <label for="color_scheme" class="form-label">
+                        <i class="bi bi-palette me-2"></i>theme color
+                    </label>
+                    <select class="form-control" id="color_scheme" name="color_scheme" required>
+                        <option value="purple" {% if current_user.color_scheme == 'purple' %}selected{% endif %} 
+                                style="background: #e6e6fa; color: #4a4a4a;">💜 lavender</option>
+                        <option value="pink" {% if current_user.color_scheme == 'pink' %}selected{% endif %} 
+                                style="background: #ffdab9; color: #4a4a4a;">🩷 peach</option>
+                        <option value="blue" {% if current_user.color_scheme == 'blue' %}selected{% endif %} 
+                                style="background: #b8e2f2; color: #4a4a4a;">💙 sky blue</option>
+                        <option value="orange" {% if current_user.color_scheme == 'orange' %}selected{% endif %} 
+                                style="background: #ffd7b5; color: #4a4a4a;">🧡 coral</option>
+                    </select>
+                </div>
                     
                     <hr class="my-4" style="border-color: var(--pastel-lavender);">
                     
