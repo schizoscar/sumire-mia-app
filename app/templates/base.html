@@ -26,19 +26,17 @@
     <!-- Bootstrap Datepicker JS (depends on jQuery) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.10.0/js/bootstrap-datepicker.min.js"></script>
     
-    <!-- Cyberpunk Theme CSS -->
+    <!-- Modern Theme CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-    <div class="diagonal-stripe"></div>
-    
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg">
         <div class="container">
             <a class="navbar-brand" href="{{ url_for('main.index') }}">
-                <i class="fas fa-cog"></i> {{ config.APP_NAME }} <span class="terminal-cursor"></span>
+                <i class="bi bi-cup-straw"></i> {{ config.APP_NAME }}
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
@@ -49,37 +47,37 @@
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('calendar.index') }}">
-                            <i class="fas fa-calendar"></i> CALENDAR
+                            <i class="bi bi-calendar-heart"></i> calendar
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('todos.index') }}">
-                            <i class="fas fa-tasks"></i> TASKS
+                            <i class="bi bi-check2-square"></i> tasks
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('reminders.index') }}">
-                            <i class="fas fa-bell"></i> REMINDERS
+                            <i class="bi bi-bell"></i> reminders
                         </a>
                     </li>
                     {% if current_user.is_admin %}
                     <li class="nav-item">
                         <a class="nav-link" href="{{ url_for('admin.users') }}">
-                            <i class="fas fa-users-cog"></i> ADMIN
+                            <i class="bi bi-people"></i> admin
                         </a>
                     </li>
                     {% endif %}
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="fas fa-user"></i> {{ current_user.username }}
+                            <i class="bi bi-person-circle"></i> {{ current_user.username }}
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
                             <li><a class="dropdown-item" href="{{ url_for('auth.profile') }}">
-                                <i class="fas fa-id-card"></i> PROFILE
+                                <i class="bi bi-person"></i> profile
                             </a></li>
                             <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item" href="{{ url_for('auth.logout') }}">
-                                <i class="fas fa-sign-out-alt"></i> LOGOUT
+                                <i class="bi bi-box-arrow-right"></i> logout
                             </a></li>
                         </ul>
                     </li>
@@ -95,7 +93,7 @@
             {% if messages %}
                 {% for category, message in messages %}
                     <div class="alert alert-{{ category if category != 'error' else 'danger' }} alert-dismissible fade show" role="alert">
-                        <i class="fas fa-terminal"></i> {{ message }}
+                        <i class="bi bi-info-circle me-2"></i> {{ message }}
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 {% endfor %}
@@ -114,3 +112,44 @@
     {% block extra_js %}{% endblock %}
 </body>
 </html>
+
+<style>
+/* Common header styles for all pages */
+.header-chevron {
+    display: inline-block;
+    margin-right: 4px;
+    color: var(--pastel-lavender);
+}
+
+/* Desktop button styles */
+@media (min-width: 769px) {
+    .btn-primary.w-md-auto {
+        width: auto !important;
+        min-width: 120px;
+    }
+}
+
+/* Mobile header styles */
+@media (max-width: 768px) {
+    .d-flex.flex-column.flex-md-row {
+        width: 100%;
+    }
+    
+    .header-chevron {
+        margin-right: 2px;
+    }
+    
+    .btn-primary.w-100.w-md-auto {
+        width: 100% !important;
+    }
+}
+
+/* Fix nav link text */
+.nav-link {
+    text-transform: lowercase !important;
+}
+
+.navbar-brand {
+    text-transform: none !important;
+}
+</style>

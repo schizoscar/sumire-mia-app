@@ -68,34 +68,3 @@ def home():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     return redirect(url_for('auth.login'))
-
-@main_bp.route('/init-render-db')
-def init_render_db():
-    """Initialize database on Render (remove after first use)."""
-    import secrets
-    from app.models.user import User
-    
-    # Simple security check - you can add a secret key query param
-    secret = request.args.get('secret', '')
-    if secret != 'your-init-secret-here':  # Change this to a random string
-        return "Unauthorized", 401
-    
-    try:
-        db.create_all()
-        
-        # Create admin user if none exists
-        if not User.query.first():
-            admin = User(
-                username='admin',
-                email='admin@example.com',
-                color_scheme='purple',
-                is_admin=True
-            )
-            admin.set_password('admin123')
-            db.session.add(admin)
-            db.session.commit()
-            return "✅ Database initialized and admin user created!"
-        else:
-            return "✅ Database already initialized"
-    except Exception as e:
-        return f"❌ Error: {str(e)}", 500

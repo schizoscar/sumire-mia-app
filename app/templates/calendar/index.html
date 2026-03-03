@@ -3,9 +3,12 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="mb-0" style="font-size: 1.8rem;">> calendar</h1>
-            <a href="{{ url_for('calendar.add') }}" class="btn btn-primary">
+        <!-- Mobile-friendly header with proper stacking -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+            <h1 class="mb-0" style="font-size: 1.8rem;">
+                <span class="header-chevron">></span> calendar
+            </h1>
+            <a href="{{ url_for('calendar.add') }}" class="btn btn-primary w-100 w-md-auto">
                 <i class="fas fa-plus"></i> new event
             </a>
         </div>
@@ -180,6 +183,11 @@
 </script>
 
 <style>
+.header-chevron {
+    display: inline-block;
+    margin-right: 4px;
+}
+
 /* Calendar customizations */
 .fc {
     background: white;
@@ -229,20 +237,17 @@
     min-height: auto !important;
 }
 
-/* Remove FullCalendar's default dot */
-.fc-event .fc-event-main::before,
-.fc-event .fc-event-title::before,
-.fc-event .fc-event-time::before {
+/* Remove ALL FullCalendar default pseudo-elements */
+.fc-event:before,
+.fc-event:after,
+.fc-event .fc-event-main:before,
+.fc-event .fc-event-main:after,
+.fc-event .fc-event-title:before,
+.fc-event .fc-event-title:after,
+.fc-event .fc-event-time:before,
+.fc-event .fc-event-time:after {
     display: none !important;
     content: none !important;
-}
-
-/* Remove any background images */
-.fc-event:after,
-.fc-event:before,
-.fc-event-main:after,
-.fc-event-main:before {
-    display: none !important;
 }
 
 /* Your custom event styling */
@@ -259,39 +264,12 @@
     position: relative !important;
 }
 
-/* Your custom dot - this is the ONLY dot */
 .fc-event .fc-event-main {
     display: flex !important;
     align-items: center !important;
     width: 100% !important;
     background: transparent !important;
     padding: 0 !important;
-}
-
-.fc-event .fc-event-main::before {
-    content: '' !important;
-    display: inline-block !important;
-    width: 8px !important;
-    height: 8px !important;
-    border-radius: 50% !important;
-    margin-right: 6px !important;
-    flex-shrink: 0 !important;
-    background: currentColor;
-}
-
-.fc-event[data-type="solo"][data-color="purple"] .fc-event-main::before {
-    background: #c084fc !important;
-    box-shadow: 0 0 0 2px rgba(192, 132, 252, 0.3) !important;
-}
-
-.fc-event[data-type="solo"][data-color="pink"] .fc-event-main::before {
-    background: #f9a8d4 !important;
-    box-shadow: 0 0 0 2px rgba(249, 168, 212, 0.3) !important;
-}
-
-.fc-event[data-type="joined"] .fc-event-main::before {
-    background: #ef4444 !important;
-    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.3) !important;
 }
 
 /* Event background colors */
@@ -303,6 +281,16 @@
 .fc-event[data-type="solo"][data-color="pink"] {
     background: #ffdab9 !important;
     border-left: 3px solid #f9a8d4 !important;
+}
+
+.fc-event[data-type="solo"][data-color="blue"] {
+    background: #b8e2f2 !important;
+    border-left: 3px solid #7aa5c7 !important;
+}
+
+.fc-event[data-type="solo"][data-color="orange"] {
+    background: #ffd7b5 !important;
+    border-left: 3px solid #f9a95d !important;
 }
 
 .fc-event[data-type="joined"] {
@@ -391,14 +379,57 @@
     margin-bottom: 2px !important;
 }
 
-/* Remove any remaining cyberpunk theme leftovers */
-.glitch {
-    text-transform: lowercase !important;
+/* Desktop optimizations */
+@media (min-width: 769px) {
+    .fc-toolbar {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+    
+    .fc-toolbar-chunk {
+        width: auto !important;
+    }
+    
+    .fc-toolbar-title {
+        font-size: 1.5rem !important;
+    }
+    
+    .fc-button-group {
+        flex-wrap: nowrap !important;
+    }
 }
 
-.glitch::before,
-.glitch::after {
-    display: none;
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .fc-toolbar {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 10px !important;
+    }
+    
+    .fc-toolbar-chunk {
+        width: 100% !important;
+    }
+    
+    .fc-toolbar-title {
+        font-size: 1.2rem !important;
+    }
+    
+    .fc-button-group {
+        flex-wrap: wrap !important;
+    }
+    
+    .calendar-container {
+        padding: 10px !important;
+    }
+    
+    .d-flex.flex-column.flex-md-row {
+        width: 100%;
+    }
+    
+    .header-chevron {
+        margin-right: 2px;
+    }
 }
 </style>
 {% endblock %}

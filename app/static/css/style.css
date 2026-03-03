@@ -1558,3 +1558,54 @@ input[type="radio"] {
             margin-left: 28px;
         }
 }
+
+/* ===== COLOR DOTS FOR TASKS AND REMINDERS ===== */
+.color-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-right: 8px;
+}
+
+/* Mobile adjustments for tasks and reminders */
+@media (max-width: 768px) {
+    .task-item .d-flex.align-items-center {
+        flex-direction: row !important;
+        align-items: center !important;
+        width: 100%;
+    }
+
+    .task-item .ms-3 {
+        margin-left: 8px !important;
+        margin-top: 0;
+    }
+
+    .reminder-list .card-body .d-flex.align-items-center {
+        flex-direction: row !important;
+        align-items: center !important;
+    }
+
+    .reminder-list .ms-3 {
+        margin-left: 8px !important;
+        margin-top: 0;
+    }
+}
+
+/* ===== EVENT DOTS FOR CALENDAR ===== */
+.event-dot {
+    display: inline-block !important;
+    width: 8px !important;
+    height: 8px !important;
+    border-radius: 50% !important;
+    margin-right: 6px !important;
+    flex-shrink: 0 !important;
+}
+
+/* Ensure no other pseudo-elements create dots */
+.fc-event *:before,
+.fc-event *:after {
+    display: none !important;
+    content: none !important;
+}

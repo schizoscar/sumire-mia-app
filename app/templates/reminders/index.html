@@ -3,43 +3,117 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">Reminders</h1>
-        <a href="{{ url_for('reminders.add') }}" class="btn mb-3" style="background-color: var(--theme-color); color: white;">
-            <i class="fas fa-plus"></i> Add Reminder
-        </a>
+        <!-- Mobile-friendly header matching calendar style -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+            <h1 class="mb-0" style="font-size: 1.8rem;">
+                <span class="header-chevron">></span> reminders
+            </h1>
+            <a href="{{ url_for('reminders.add') }}" class="btn btn-primary w-100 w-md-auto" style="width: auto; min-width: 120px;">
+                <i class="fas fa-plus"></i> add reminder
+            </a>
+        </div>
         
         <div class="reminder-list">
             {% for reminder in reminders %}
-            <div class="card mb-3" style="border-left: 4px solid var(--theme-color);">
+            <div class="card mb-3">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col-8">
-                            <h5 class="card-title">{{ reminder.title }}</h5>
-                            <p class="card-text">{{ reminder.message }}</p>
-                            <p class="card-text">
-                                <small class="text-muted">
-                                    <i class="far fa-clock"></i> {{ reminder.reminder_time.strftime('%Y-%m-%d %H:%M') }}
-                                    {% if reminder.repeat != 'none' %}
-                                    <span class="badge bg-info ms-2">Repeats {{ reminder.repeat }}</span>
-                                    {% endif %}
-                                </small>
-                            </p>
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="d-flex align-items-center">
+                            <span class="color-dot" style="background-color: 
+                                {% if reminder.reminder_owner.color_scheme == 'purple' %}#e6e6fa; border: 2px solid #c084fc;
+                                {% elif reminder.reminder_owner.color_scheme == 'pink' %}#ffdab9; border: 2px solid #f9a8d4;
+                                {% elif reminder.reminder_owner.color_scheme == 'blue' %}#b8e2f2; border: 2px solid #7aa5c7;
+                                {% elif reminder.reminder_owner.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
+                                {% endif %}"></span>
+                            <div class="ms-3">
+                                <h5 class="card-title mb-1">{{ reminder.title }}</h5>
+                                <p class="card-text text-secondary mb-1">{{ reminder.message }}</p>
+                                <p class="card-text">
+                                    <small class="text-secondary">
+                                        <i class="bi bi-clock"></i> {{ reminder.reminder_time.strftime('%d/%m/%y %I:%M %p') }}
+                                        {% if reminder.repeat != 'none' %}
+                                        <span class="badge ms-2" style="background: rgba(255, 218, 185, 0.3); color: var(--charcoal);">repeats {{ reminder.repeat }}</span>
+                                        {% endif %}
+                                    </small>
+                                </p>
+                            </div>
                         </div>
-                        <div class="col-4 text-end">
+                        <div class="d-flex gap-2">
                             <a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="fas fa-edit"></i>
+                                <i class="bi bi-pencil"></i>
                             </a>
                             <a href="{{ url_for('reminders.delete', reminder_id=reminder.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this reminder?')">
-                                <i class="fas fa-trash"></i>
+                                <i class="bi bi-trash"></i>
                             </a>
                         </div>
                     </div>
                 </div>
             </div>
             {% else %}
-            <p class="text-muted">No reminders yet. Click "Add Reminder" to create one!</p>
+            <p class="text-muted">no reminders yet. click "add reminder" to create one!</p>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<style>
+.header-chevron {
+    display: inline-block;
+    margin-right: 4px;
+}
+
+/* Fix button width on desktop */
+@media (min-width: 769px) {
+    .btn-primary.w-md-auto {
+        width: auto !important;
+        min-width: 120px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .btn-primary.w-100.w-md-auto {
+        width: 100% !important;
+    }
+    
+    .header-chevron {
+        margin-right: 2px;
+    }
+}
+
+.reminder-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 12px;
+    border: 1px solid rgba(230, 230, 250, 0.5);
+}
+
+.color-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-right: 12px;
+}
+
+/* Mobile reminder item adjustments */
+@media (max-width: 768px) {
+    .reminder-item .d-flex.align-items-center {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+    
+    .reminder-item .ms-3 {
+        margin-left: 0 !important;
+    }
+    
+    .reminder-item .d-flex.gap-2 {
+        width: 100%;
+        justify-content: flex-end;
+    }
+}
+</style>
 {% endblock %}

@@ -3,47 +3,143 @@
 {% block content %}
 <div class="row">
     <div class="col-12">
-        <h1 class="mb-4">To-Do List</h1>
-        <a href="{{ url_for('todos.add') }}" class="btn mb-3" style="background-color: var(--theme-color); color: white;">
-            <i class="fas fa-plus"></i> Add Task
-        </a>
+        <!-- Mobile-friendly header matching calendar style -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
+            <h1 class="mb-0" style="font-size: 1.8rem;">
+                <span class="header-chevron">></span> tasks
+            </h1>
+            <a href="{{ url_for('todos.add') }}" class="btn btn-primary w-100 w-md-auto" style="width: auto; min-width: 120px;">
+                <i class="fas fa-plus"></i> add task
+            </a>
+        </div>
         
         <div class="task-list">
             {% for task in tasks %}
-            <div class="task-item {% if task.completed %}completed{% endif %}" style="border-left: 4px solid var(--theme-color);">
-                <div class="row align-items-center">
-                    <div class="col-1">
-                        <a href="{{ url_for('todos.toggle', task_id=task.id) }}" class="text-decoration-none">
-                            {% if task.completed %}
-                            <i class="fas fa-check-circle" style="color: var(--theme-color); font-size: 1.5rem;"></i>
+            <div class="task-item d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center">
+                    <!-- Checkbox -->
+                    <a href="{{ url_for('todos.toggle', task_id=task.id) }}" class="text-decoration-none me-3">
+                        {% if task.completed %}
+                        <i class="bi bi-check-circle-fill" style="color: var(--sage-green); font-size: 1.5rem;"></i>
+                        {% else %}
+                        <i class="bi bi-circle" style="color: var(--pastel-lavender); font-size: 1.5rem;"></i>
+                        {% endif %}
+                    </a>
+                    
+                    <!-- Color dot -->
+                    <span class="color-dot" style="background-color: 
+                        {% if task.task_owner.color_scheme == 'purple' %}#e6e6fa; border: 2px solid #c084fc;
+                        {% elif task.task_owner.color_scheme == 'pink' %}#ffdab9; border: 2px solid #f9a8d4;
+                        {% elif task.task_owner.color_scheme == 'blue' %}#b8e2f2; border: 2px solid #7aa5c7;
+                        {% elif task.task_owner.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
+                        {% endif %}"></span>
+                    
+                    <div class="ms-3">
+                        <h6 class="mb-0 {% if task.completed %}text-decoration-line-through text-secondary{% endif %}">{{ task.title }}</h6>
+                        <small class="text-secondary">
+                            {% if task.due_date %}
+                                due {{ task.due_date.strftime('%d/%m/%y') }}
                             {% else %}
-                            <i class="far fa-circle" style="color: var(--theme-color); font-size: 1.5rem;"></i>
+                                no due date
                             {% endif %}
-                        </a>
+                        </small>
                     </div>
-                    <div class="col-8">
-                        <h5 class="mb-1">{{ task.title }}</h5>
-                        {% if task.description %}
-                        <p class="mb-1 text-muted">{{ task.description }}</p>
-                        {% endif %}
-                        {% if task.due_date %}
-                        <small class="text-muted">Due: {{ task.due_date.strftime('%Y-%m-%d') }}</small>
-                        {% endif %}
-                    </div>
-                    <div class="col-3 text-end">
-                        <a href="{{ url_for('todos.edit', task_id=task.id) }}" class="btn btn-sm btn-outline-primary">
-                            <i class="fas fa-edit"></i>
-                        </a>
-                        <a href="{{ url_for('todos.delete', task_id=task.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this task?')">
-                            <i class="fas fa-trash"></i>
-                        </a>
-                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    {% if not task.completed %}
+                    <span class="badge" style="background: rgba(230, 230, 250, 0.3); color: var(--charcoal);">pending</span>
+                    {% else %}
+                    <span class="badge" style="background: rgba(204, 213, 174, 0.3); color: var(--charcoal);">completed</span>
+                    {% endif %}
+                    <a href="{{ url_for('todos.edit', task_id=task.id) }}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                    <a href="{{ url_for('todos.delete', task_id=task.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this task?')">
+                        <i class="bi bi-trash"></i>
+                    </a>
                 </div>
             </div>
             {% else %}
-            <p class="text-muted">No tasks yet. Click "Add Task" to create one!</p>
+            <p class="text-muted text-center py-4">no tasks yet. click "add task" to create one!</p>
             {% endfor %}
         </div>
     </div>
 </div>
+
+<style>
+.header-chevron {
+    display: inline-block;
+    margin-right: 4px;
+}
+
+/* Fix button width on desktop */
+@media (min-width: 769px) {
+    .btn-primary.w-md-auto {
+        width: auto !important;
+        min-width: 120px;
+    }
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .btn-primary.w-100.w-md-auto {
+        width: 100% !important;
+    }
+    
+    .header-chevron {
+        margin-right: 2px;
+    }
+}
+
+.task-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 12px;
+    border: 1px solid rgba(230, 230, 250, 0.5);
+    transition: all 0.2s ease;
+}
+
+.task-item:hover {
+    border-color: var(--pastel-lavender);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Color dot styling */
+.color-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin: 0 8px;
+}
+
+/* Badge styling */
+.badge {
+    font-weight: 500;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+}
+
+/* Mobile task item adjustments */
+@media (max-width: 768px) {
+    .task-item {
+        flex-direction: column;
+        align-items: flex-start !important;
+        gap: 12px;
+    }
+    
+    .task-item .d-flex.align-items-center {
+        width: 100%;
+        flex-wrap: wrap;
+    }
+    
+    .task-item .d-flex.align-items-center.gap-2 {
+        justify-content: flex-end;
+        width: 100%;
+    }
+}
+</style>
 {% endblock %}
