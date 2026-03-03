@@ -16,7 +16,7 @@ services:
       - key: APP_NAME
         value: すみれ＆みあ
       - key: SENDGRID_API_KEY
-        sync: false  # You'll need to set this manually
+        sync: false
       - key: SENDGRID_FROM_EMAIL
         value: sumirepohscarlet@gmail.com
       - key: SENDGRID_FROM_NAME

@@ -8,66 +8,211 @@
             <h1 class="mb-0" style="font-size: 1.8rem;">
                 <span class="header-chevron">></span> reminders
             </h1>
-            <a href="{{ url_for('reminders.add') }}" class="btn btn-primary w-100 w-md-auto" style="width: auto; min-width: 120px;">
+            <a href="{{ url_for('reminders.add') }}" class="btn btn-primary w-100 w-md-auto">
                 <i class="fas fa-plus"></i> add reminder
             </a>
         </div>
         
         <div class="reminder-list">
             {% for reminder in reminders %}
-            <div class="card mb-3">
-                <div class="card-body">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="d-flex align-items-center">
-                            <span class="color-dot" style="background-color: 
-                                {% if reminder.reminder_owner.color_scheme == 'purple' %}#e6e6fa; border: 2px solid #c084fc;
-                                {% elif reminder.reminder_owner.color_scheme == 'pink' %}#ffdab9; border: 2px solid #f9a8d4;
-                                {% elif reminder.reminder_owner.color_scheme == 'blue' %}#b8e2f2; border: 2px solid #7aa5c7;
-                                {% elif reminder.reminder_owner.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
-                                {% endif %}"></span>
-                            <div class="ms-3">
-                                <h5 class="card-title mb-1">{{ reminder.title }}</h5>
-                                <p class="card-text text-secondary mb-1">{{ reminder.message }}</p>
-                                <p class="card-text">
-                                    <small class="text-secondary">
-                                        <i class="bi bi-clock"></i> {{ reminder.reminder_time.strftime('%d/%m/%y %I:%M %p') }}
-                                        {% if reminder.repeat != 'none' %}
-                                        <span class="badge ms-2" style="background: rgba(255, 218, 185, 0.3); color: var(--charcoal);">repeats {{ reminder.repeat }}</span>
-                                        {% endif %}
-                                    </small>
-                                </p>
+            <div class="reminder-item">
+                <div class="d-flex align-items-start justify-content-between">
+                    <div class="d-flex">
+                        <span class="color-dot" style="background-color: 
+                            {% if reminder.reminder_owner.color_scheme == 'purple' %}#e6e6fa; border: 2px solid #c084fc;
+                            {% elif reminder.reminder_owner.color_scheme == 'pink' %}#ffdab9; border: 2px solid #f9a8d4;
+                            {% elif reminder.reminder_owner.color_scheme == 'blue' %}#b8e2f2; border: 2px solid #7aa5c7;
+                            {% elif reminder.reminder_owner.color_scheme == 'orange' %}#ffd7b5; border: 2px solid #f9a95d;
+                            {% endif %}"></span>
+                        <div class="reminder-content ms-3">
+                            <h5 class="reminder-title">{{ reminder.title }}</h5>
+                            <p class="reminder-message">{{ reminder.message }}</p>
+                            <div class="reminder-meta">
+                                <small>
+                                    <i class="bi bi-clock"></i> {{ reminder.reminder_time.strftime('%d/%m/%y %I:%M %p') }}
+                                </small>
+                                {% if reminder.repeat != 'none' %}
+                                <span class="reminder-badge">repeats {{ reminder.repeat }}</span>
+                                {% endif %}
                             </div>
                         </div>
-                        <div class="d-flex gap-2">
-                            <a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                            <a href="{{ url_for('reminders.delete', reminder_id=reminder.id) }}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Delete this reminder?')">
-                                <i class="bi bi-trash"></i>
-                            </a>
-                        </div>
+                    </div>
+                    <div class="reminder-actions">
+                        <a href="{{ url_for('reminders.edit', reminder_id=reminder.id) }}" class="btn-edit" title="edit reminder">
+                            <i class="bi bi-pencil"></i>
+                        </a>
+                        <a href="{{ url_for('reminders.delete', reminder_id=reminder.id) }}" class="btn-delete" onclick="return confirm('Delete this reminder?')" title="delete reminder">
+                            <i class="bi bi-trash"></i>
+                        </a>
                     </div>
                 </div>
             </div>
             {% else %}
-            <p class="text-muted">no reminders yet. click "add reminder" to create one!</p>
+            <div class="empty-state">
+                <i class="bi bi-bell"></i>
+                <p>no reminders yet.</p>
+                <a href="{{ url_for('reminders.add') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> add your first reminder
+                </a>
+            </div>
             {% endfor %}
         </div>
     </div>
 </div>
 
 <style>
+/* Header styles */
 .header-chevron {
     display: inline-block;
     margin-right: 4px;
+    color: var(--pastel-lavender);
 }
 
-/* Fix button width on desktop */
-@media (min-width: 769px) {
-    .btn-primary.w-md-auto {
-        width: auto !important;
-        min-width: 120px;
-    }
+/* Reminder item styling */
+.reminder-item {
+    background: white;
+    border-radius: 16px;
+    padding: 1.2rem;
+    margin-bottom: 12px;
+    border: 1px solid rgba(230, 230, 250, 0.5);
+    transition: all 0.2s ease;
+}
+
+.reminder-item:hover {
+    border-color: var(--pastel-lavender);
+    box-shadow: var(--shadow-soft);
+}
+
+/* Color dot */
+.color-dot {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 3px;
+}
+
+/* Reminder content - OVERRIDE lowercase forcing */
+.reminder-content {
+    flex: 1;
+}
+
+.reminder-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    margin-bottom: 4px;
+    text-transform: none !important;
+}
+
+.reminder-message {
+    font-size: 0.95rem;
+    color: var(--warm-gray);
+    margin-bottom: 8px;
+    line-height: 1.5;
+    text-transform: none !important;
+}
+
+.reminder-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.reminder-meta small {
+    color: var(--warm-gray);
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    text-transform: none !important;
+}
+
+.reminder-meta small i {
+    color: var(--pastel-lavender);
+    font-size: 0.9rem;
+}
+
+.reminder-badge {
+    background: rgba(255, 218, 185, 0.3);
+    color: var(--charcoal);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    text-transform: none !important;
+}
+
+/* Action buttons - matching todos page exactly */
+.reminder-actions {
+    display: flex;
+    gap: 6px;
+    margin-left: 12px;
+}
+
+.btn-edit, .btn-delete {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 20px;
+    transition: all 0.2s ease;
+    text-decoration: none;
+}
+
+.btn-edit {
+    background: transparent;
+    border: 1px solid var(--pastel-lavender);
+    color: var(--charcoal);
+}
+
+.btn-edit:hover {
+    background: var(--pastel-lavender);
+    border-color: var(--soft-lavender);
+    color: var(--charcoal);
+    transform: translateY(-2px);
+}
+
+.btn-delete {
+    background: transparent;
+    border: 1px solid #f8d7da;
+    color: #842029;
+}
+
+.btn-delete:hover {
+    background: #f8d7da;
+    border-color: #f5c2c7;
+    color: #842029;
+    transform: translateY(-2px);
+}
+
+.btn-edit i, .btn-delete i {
+    font-size: 0.9rem;
+}
+
+/* Empty state */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid rgba(230, 230, 250, 0.5);
+}
+
+.empty-state i {
+    font-size: 3rem;
+    color: var(--pastel-lavender);
+    opacity: 0.5;
+    margin-bottom: 1rem;
+}
+
+.empty-state p {
+    color: var(--warm-gray);
+    margin-bottom: 1rem;
+    text-transform: none !important;
 }
 
 /* Mobile styles */
@@ -79,40 +224,38 @@
     .header-chevron {
         margin-right: 2px;
     }
-}
-
-.reminder-item {
-    background: white;
-    border-radius: 16px;
-    padding: 1rem;
-    margin-bottom: 12px;
-    border: 1px solid rgba(230, 230, 250, 0.5);
-}
-
-.color-dot {
-    display: inline-block;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-right: 12px;
-}
-
-/* Mobile reminder item adjustments */
-@media (max-width: 768px) {
-    .reminder-item .d-flex.align-items-center {
+    
+    .reminder-item .d-flex.align-items-start {
         flex-direction: column;
-        align-items: flex-start !important;
-        gap: 12px;
+        gap: 15px;
     }
     
-    .reminder-item .ms-3 {
-        margin-left: 0 !important;
+    .reminder-item .d-flex {
+        width: 100%;
     }
     
-    .reminder-item .d-flex.gap-2 {
+    .reminder-actions {
         width: 100%;
         justify-content: flex-end;
+        margin-left: 28px;
+    }
+    
+    .reminder-meta {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+}
+
+@media (max-width: 480px) {
+    .reminder-actions {
+        margin-left: 0;
+        justify-content: space-between;
+    }
+    
+    .btn-edit, .btn-delete {
+        flex: 1;
+        height: 36px;
     }
 }
 </style>

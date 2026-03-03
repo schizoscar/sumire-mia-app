@@ -44,3 +44,6 @@ instance/
 # OS
 .DS_Store
 Thumbs.db
+
+# MISC
+test_db.py
