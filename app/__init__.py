@@ -2,15 +2,20 @@ from flask import Flask, redirect, url_for
 from flask_migrate import Migrate
 from flask_login import LoginManager, current_user
 from config import config
+import os
 
 # Initialize extensions (without app)
 from app.extensions import db, login_manager
 
 migrate = Migrate()
 
-def create_app(config_name='default'):
+def create_app(config_name=None):
     """Application factory function."""
     app = Flask(__name__)
+    
+    # Determine configuration based on environment
+    if config_name is None:
+        config_name = os.environ.get('FLASK_ENV', 'default')
     
     # Load configuration
     app.config.from_object(config[config_name])
@@ -40,7 +45,7 @@ def create_app(config_name='default'):
     app.register_blueprint(reminders_bp, url_prefix='/reminders')
     app.register_blueprint(admin_bp, url_prefix='/admin')
     
-    # Add a root route directly in the app if needed
+    # Add a root route directly in the app
     @app.route('/')
     def root():
         """Root URL - redirect to main index or login."""
@@ -48,8 +53,10 @@ def create_app(config_name='default'):
             return redirect(url_for('main.index'))
         return redirect(url_for('auth.login'))
     
-    # Create tables
+    # Create tables only if they don't exist (optional, consider using migrations instead)
     with app.app_context():
+        # This is safe to run - it won't overwrite existing tables
         db.create_all()
+        print("✅ Database tables verified/created")
     
     return app

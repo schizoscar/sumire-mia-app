@@ -90,6 +90,7 @@
     <Content Include="app\templates\todos\edit.html" />
     <Content Include="app\templates\todos\index.html" />
     <Content Include="app\templates\todos\list.html" />
+    <Content Include="render.yaml" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\Python Tools\Microsoft.PythonTools.targets" />
   <!-- Uncomment the CoreCompile target to enable the Build command in

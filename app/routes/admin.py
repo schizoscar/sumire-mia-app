@@ -115,14 +115,19 @@ def edit_user(user_id):
         
         # Reset password if requested
         if reset_password:
+            import secrets
+            import string
             alphabet = string.ascii_letters + string.digits
             temp_password = ''.join(secrets.choice(alphabet) for i in range(12))
             user.set_password(temp_password)
             
+            # Send password reset email
             try:
-                send_invitation_email(user.email, user.username, temp_password)
+                from app.services.email_service import send_password_reset_email
+                send_password_reset_email(user.email, user.username, temp_password)
                 flash(f'Password reset. New password sent to {user.email}', 'success')
-            except:
+            except Exception as e:
+                print(f"Email error: {e}")
                 flash(f'Password reset. Temporary password: {temp_password}', 'warning')
         
         db.session.commit()

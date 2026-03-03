@@ -15,7 +15,7 @@ class Config:
         # Render uses postgres:// but SQLAlchemy needs postgresql://
         database_url = database_url.replace('postgres://', 'postgresql://', 1)
     
-    SQLALCHEMY_DATABASE_URI = database_url or 'postgresql://sumiremiadb_user:kduwJgXOsdbozAe4wRbEMjXcpRnFBO4R@dpg-d6iop8n5r7bs73fmgheg-a/sumiremiadb'
+    SQLALCHEMY_DATABASE_URI = database_url or 'postgresql://localhost/sumire_mia_db'
     
     # App settings
     APP_NAME = os.environ.get('APP_NAME', 'すみれ＆みあ')
@@ -36,9 +36,15 @@ class ProductionConfig(Config):
     """Production configuration."""
     DEBUG = False
     
+class TestingConfig(Config):
+    """Testing configuration."""
+    TESTING = True
+    DEBUG = True
+    
 # Choose config based on environment
 config = {
     'development': DevelopmentConfig,
     'production': ProductionConfig,
+    'testing': TestingConfig,
     'default': DevelopmentConfig
 }

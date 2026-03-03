@@ -1332,3 +1332,119 @@ select::-ms-expand {
 .fc-daygrid-event-harness {
     margin-bottom: 2px !important;
 }
+
+/* Ensure checkboxes are visible and properly styled */
+input[type="checkbox"],
+input[type="radio"],
+.form-check-input {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 8px !important;
+    cursor: pointer !important;
+    background-color: white !important;
+    border: 2px solid var(--pastel-lavender) !important;
+    border-radius: 6px !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    position: relative !important;
+    vertical-align: middle !important;
+}
+
+    /* Checked state */
+    input[type="checkbox"]:checked,
+    input[type="radio"]:checked,
+    .form-check-input:checked {
+        background-color: var(--pastel-lavender) !important;
+        border-color: var(--soft-lavender) !important;
+    }
+
+        /* Add checkmark for checked checkboxes */
+        input[type="checkbox"]:checked::after,
+        .form-check-input:checked::after {
+            content: '✓' !important;
+            position: absolute !important;
+            top: 50% !important;
+            left: 50% !important;
+            transform: translate(-50%, -50%) !important;
+            color: var(--charcoal) !important;
+            font-size: 14px !important;
+            font-weight: bold !important;
+        }
+
+/* Radio button specific */
+input[type="radio"] {
+    border-radius: 50% !important;
+}
+
+    input[type="radio"]:checked::after {
+        content: '' !important;
+        width: 10px !important;
+        height: 10px !important;
+        background: var(--charcoal) !important;
+        border-radius: 50% !important;
+        position: absolute !important;
+        top: 50% !important;
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+    }
+
+    /* Hover state */
+    input[type="checkbox"]:hover,
+    input[type="radio"]:hover,
+    .form-check-input:hover {
+        border-color: var(--soft-lavender) !important;
+        box-shadow: 0 0 0 3px rgba(230, 230, 250, 0.3) !important;
+    }
+
+    /* Disabled state */
+    input[type="checkbox"]:disabled,
+    input[type="radio"]:disabled,
+    .form-check-input:disabled {
+        opacity: 0.5 !important;
+        cursor: not-allowed !important;
+    }
+
+/* Form check label alignment */
+.form-check-label {
+    display: inline-flex !important;
+    align-items: center !important;
+    cursor: pointer !important;
+    margin-left: 4px !important;
+    color: var(--charcoal) !important;
+}
+
+/* Form check container */
+.form-check {
+    display: flex !important;
+    align-items: center !important;
+    margin-bottom: 10px !important;
+    padding-left: 0 !important;
+}
+
+/* Fix Bootstrap's default checkbox styling */
+.form-check-input {
+    float: none !important;
+    margin-left: 0 !important;
+    position: relative !important;
+}
+
+/* Ensure text doesn't get cut off */
+.form-check {
+    min-height: auto !important;
+}
+
+/* Fix any hidden checkboxes */
+[type="checkbox"]:not(:checked),
+[type="checkbox"]:checked {
+    opacity: 1 !important;
+    position: relative !important;
+    pointer-events: auto !important;
+}
+
+/* Override any Bootstrap defaults */
+.custom-control-input,
+.custom-control-label::before,
+.custom-control-label::after {
+    display: none !important;
+}

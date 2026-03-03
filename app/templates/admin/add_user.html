@@ -5,60 +5,61 @@
     <div class="col-md-6">
         <div class="card auth-card">
             <div class="card-header">
-                <h4 class="mb-0 glitch" data-text="> ADD NEW USER">
-                    > ADD NEW USER
-                </h4>
+                <h4 class="mb-0">> add new user</h4>
             </div>
             <div class="card-body">
-                <form method="POST" action="{{ url_for('admin.add_user') }}">
+                <form method="POST" action="{{ url_for('admin.add_user') }}" id="addUserForm">
                     <div class="mb-3">
-                        <label for="username" class="form-label">> USERNAME</label>
-                        <input type="text" class="form-control" id="username" name="username" required
-                        <small class="form-text user-hint">Choose a unique username (3-20 characters)</small>
+                        <label for="username" class="form-label">> username</label>
+                        <input type="text" class="form-control" id="username" name="username" required>
+                        <small class="form-text user-hint">choose a unique username (3-20 characters)</small>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="email" class="form-label">> EMAIL</label>
-                        <input type="email" class="form-control" id="email" name="email" required
-                        <small class="form-text user-hint">Valid email required for invitations</small>
+                        <label for="email" class="form-label">> email</label>
+                        <input type="email" class="form-control" id="email" name="email" required>
+                        <small class="form-text user-hint">valid email required for invitations</small>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="color_scheme" class="form-label">> COLOR SCHEME</label>
-                        <select class="form-control" id="color_scheme" name="color_scheme" 
-                                style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);">
-                            <option value="purple" style="color: var(--neon-purple);">💜 PURPLE</option>
-                            <option value="pink" style="color: var(--neon-pink);">🩷 PINK</option>
+                        <label for="color_scheme" class="form-label">> color scheme</label>
+                        <select class="form-control" id="color_scheme" name="color_scheme">
+                            <option value="purple" style="color: #e6e6fa;">💜 lavender</option>
+                            <option value="pink" style="color: #ffdab9;">🩷 peach</option>
                         </select>
-                        <small class="form-text user-hint">Determines the user's theme color</small>
+                        <small class="form-text user-hint">determines the user's theme color</small>
                     </div>
                     
                     <div class="mb-3">
-                        <label for="role" class="form-label">> USER ROLE</label>
-                        <select class="form-control" id="role" name="is_admin" 
-                                style="color: var(--neon-green) !important; background: rgba(10,10,15,0.9);">
-                            <option value="0" style="color: var(--neon-blue);">👤 USER</option>
-                            <option value="1" style="color: var(--neon-purple);">⚡ ADMIN</option>
+                        <label for="role" class="form-label">> user role</label>
+                        <select class="form-control" id="role" name="is_admin">
+                            <option value="0" style="color: #8b8b8b;">👤 user</option>
+                            <option value="1" style="color: #e6e6fa;">⚡ admin</option>
                         </select>
-                        <small class="form-text user-hint">Admins have full system access</small>
+                        <small class="form-text user-hint">admins have full system access</small>
                     </div>
                     
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="send_invite" name="send_invite" checked>
-                        <label class="form-check-label" for="send_invite">SEND INVITATION EMAIL</label>
+                        <label class="form-check-label" for="send_invite">send invitation email</label>
                     </div>
                     
-                    <div class="alert alert-info" style="background: rgba(10,10,15,0.9); border-left-color: var(--neon-blue);">
-                        <i class="bi bi-info-circle-fill me-2" style="color: var(--neon-blue);"></i>
-                        <span style="color: var(--neon-green);">A temporary password will be generated automatically</span>
+                    <!-- Email status indicator -->
+                    <div id="email-status" class="mb-3" style="font-size: 0.9rem;">
+                        <span style="color: var(--sage-green);">✓ invitation will be sent</span>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle-fill me-2"></i>
+                        <span>a temporary password will be generated automatically</span>
                     </div>
                     
                     <div class="d-flex gap-2">
                         <button type="submit" class="btn btn-primary flex-grow-1">
-                            <i class="bi bi-person-plus"></i> CREATE USER
+                            <i class="bi bi-person-plus"></i> create user
                         </button>
                         <a href="{{ url_for('admin.users') }}" class="btn btn-danger">
-                            <i class="bi bi-x-circle"></i> CANCEL
+                            <i class="bi bi-x-circle"></i> cancel
                         </a>
                     </div>
                 </form>
@@ -67,75 +68,184 @@
     </div>
 </div>
 
+<script>
+$(document).ready(function() {
+    // Add visual feedback for checkbox clicks
+    $('#send_invite').on('click', function() {
+        console.log('Send invite checkbox clicked:', $(this).prop('checked'));
+    });
+    
+    // Update email status based on checkbox
+    $('#send_invite').on('change', function() {
+        const statusDiv = $('#email-status');
+        if ($(this).is(':checked')) {
+            statusDiv.html('<span style="color: #ccd5ae;">✓ invitation will be sent</span>');
+        } else {
+            statusDiv.html('<span style="color: #8b8b8b;">✗ no invitation (manual password needed)</span>');
+        }
+    });
+    
+    // Form submission with email status logging
+    $('#addUserForm').on('submit', function() {
+        const sendInvite = $('#send_invite').is(':checked');
+        console.log('Form submitted. Send invite:', sendInvite);
+        return true;
+    });
+});
+</script>
+
 <style>
-/* Form styling */
+/* Modern styling - removing cyberpunk remnants */
 .form-control {
-    border: 1px solid var(--neon-purple);
-    border-radius: 0;
+    border: 1px solid var(--pastel-lavender);
+    border-radius: var(--border-radius-input);
     padding: 12px;
+    color: var(--charcoal) !important;
+    background: white !important;
 }
 
 .form-control:focus {
-    border-color: var(--neon-pink);
-    box-shadow: 0 0 15px rgba(255, 42, 109, 0.3);
+    border-color: var(--soft-lavender);
+    box-shadow: 0 0 0 4px rgba(230, 230, 250, 0.3);
+    outline: none;
 }
 
-/* Brighter hint text */
+/* Select styling */
+select.form-control {
+    background: white !important;
+    color: var(--charcoal) !important;
+}
+
+select.form-control option {
+    background: white !important;
+    color: var(--charcoal) !important;
+    padding: 10px;
+}
+
+/* Hint text - modern style */
 .user-hint {
-    color: var(--neon-blue) !important;
-    font-family: 'Share Tech Mono', monospace;
+    color: var(--warm-gray) !important;
+    font-family: 'Inter', sans-serif;
     font-size: 0.85rem;
     margin-top: 8px;
     display: block;
-    opacity: 1;
-    text-shadow: 0 0 8px var(--neon-blue);
-    letter-spacing: 0.5px;
-    border-left: 2px solid var(--neon-blue);
-    padding-left: 8px;
+    border-left: 2px solid var(--pastel-lavender);
+    padding-left: 12px;
+    font-style: normal;
 }
 
-/* Form check styling */
+/* Checkbox styling - FIXED */
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-left: 0;
+}
+
 .form-check-input {
-    background-color: transparent;
-    border-color: var(--neon-purple);
-    cursor: pointer;
-    width: 18px;
-    height: 18px;
+    width: 20px !important;
+    height: 20px !important;
+    margin: 0 !important;
+    cursor: pointer !important;
+    background-color: white !important;
+    border: 2px solid var(--pastel-lavender) !important;
+    border-radius: 6px !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    position: relative !important;
+    float: none !important;
+    margin-right: 10px !important;
 }
 
 .form-check-input:checked {
-    background-color: var(--neon-purple);
-    border-color: var(--neon-purple);
+    background-color: var(--pastel-lavender) !important;
+    border-color: var(--soft-lavender) !important;
+}
+
+.form-check-input:checked::after {
+    content: '✓' !important;
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    color: var(--charcoal) !important;
+    font-size: 14px !important;
+    font-weight: bold !important;
+}
+
+.form-check-input:hover {
+    border-color: var(--soft-lavender) !important;
+    box-shadow: 0 0 0 3px rgba(230, 230, 250, 0.3) !important;
 }
 
 .form-check-label {
-    color: var(--neon-green);
-    font-family: 'Share Tech Mono', monospace;
-    text-transform: uppercase;
-    letter-spacing: 1px;
+    color: var(--charcoal) !important;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.95rem;
     cursor: pointer;
-    margin-left: 8px;
-    font-size: 0.9rem;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-transform: none !important;
+    letter-spacing: normal !important;
 }
 
 /* Alert styling */
 .alert {
-    border-radius: 0;
-    border: 1px solid var(--neon-blue);
-    color: var(--text-primary);
-    font-family: 'Share Tech Mono', monospace;
+    border-radius: var(--border-radius-card);
+    border: none;
+    background: white;
+    box-shadow: var(--shadow-soft);
+    border-left: 4px solid var(--pastel-lavender);
+    color: var(--charcoal);
     padding: 15px;
+    margin-top: 20px;
 }
 
 .alert i {
-    color: var(--neon-blue);
-    font-size: 1.1rem;
+    color: var(--pastel-lavender);
 }
 
-/* Select options styling */
-select option {
-    background: var(--darker-bg);
-    padding: 10px;
+/* Card header */
+.card-header {
+    background: white;
+    border-bottom: 2px solid var(--pastel-lavender);
+}
+
+.card-header h4 {
+    color: var(--charcoal);
+    font-size: 1.2rem;
+    text-transform: lowercase;
+}
+
+/* Buttons */
+.btn {
+    font-family: 'Inter', sans-serif;
+    border-radius: var(--border-radius-button);
+    padding: 12px 24px;
+    font-weight: 500;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, var(--pastel-lavender), var(--soft-lavender));
+    color: var(--charcoal);
+    border: none;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(230, 230, 250, 0.6);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #f8d7da, #f5c2c7);
+    color: #842029;
+    border: none;
+}
+
+.btn-danger:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(245, 194, 199, 0.6);
 }
 
 /* Responsive */
@@ -146,10 +256,6 @@ select option {
     
     .btn {
         width: 100%;
-    }
-    
-    .user-hint {
-        font-size: 0.75rem;
     }
 }
 </style>
