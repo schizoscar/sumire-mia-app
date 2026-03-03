@@ -152,4 +152,50 @@
 .navbar-brand {
     text-transform: none !important;
 }
+
+/* Force ALL text to lowercase unless specifically overridden */
+* {
+    text-transform: lowercase !important;
+}
+
+/* Override for elements that should keep their original case */
+.navbar-brand,
+.btn i,
+.bi,
+.fas,
+.far,
+.fab,
+[class*="fa-"],
+[class*="bi-"],
+input,
+textarea,
+select,
+option,
+code,
+pre,
+.username,
+.user-name,
+.dropdown-item i {
+    text-transform: none !important;
+}
+
+/* Specifically target the welcome heading */
+h1.mb-2 {
+    text-transform: lowercase !important;
+}
+
+/* Make sure the first letter isn't auto-capitalized */
+h1.mb-2::first-letter,
+h1::first-letter,
+h2::first-letter,
+h3::first-letter {
+    text-transform: lowercase !important;
+}
+
+/* For any text that should keep original case (like usernames) */
+h1.mb-2 .username,
+h1.mb-2 strong,
+h1.mb-2 span:not(.header-chevron) {
+    text-transform: none !important;
+}
 </style>
