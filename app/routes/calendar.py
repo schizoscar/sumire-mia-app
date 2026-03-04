@@ -106,33 +106,54 @@ def edit(event_id):
     if request.method == 'POST':
         event.title = request.form.get('title')
         event.description = request.form.get('description')
+        event.event_type = request.form.get('event_type', 'solo')
         
-        # Get the date strings
+        # Handle joined event user
+        joined_user_id = request.form.get('joined_user_id')
+        event.joined_user_id = int(joined_user_id) if joined_user_id and event.event_type == 'joined' else None
+        
+        # Get the date and time strings
         start_date_str = request.form.get('start_date')
+        start_time_str = request.form.get('start_time')
         end_date_str = request.form.get('end_date')
+        end_time_str = request.form.get('end_time')
         
         try:
-            # Parse date in DD/MM/YY HH:MM AM/PM format
-            event.start_date = datetime.strptime(start_date_str, '%d/%m/%y %I:%M %p')
-            event.end_date = datetime.strptime(end_date_str, '%d/%m/%y %I:%M %p')
+            # Parse start date and time
+            if start_date_str and start_time_str:
+                start_datetime_str = f"{start_date_str} {start_time_str}"
+                event.start_date = datetime.strptime(start_datetime_str, '%d/%m/%Y %H:%M')
+            
+            # Parse end date and time
+            if end_date_str and end_time_str:
+                end_datetime_str = f"{end_date_str} {end_time_str}"
+                event.end_date = datetime.strptime(end_datetime_str, '%d/%m/%Y %H:%M')
             
             db.session.commit()
             flash('Event updated successfully!', 'success')
             return redirect(url_for('calendar.index'))
             
         except ValueError as e:
-            print(f"Date parsing error: {e}")  # Debug print
-            flash('Invalid date format. Please use DD/MM/YY format.', 'error')
+            print(f"Date parsing error: {e}")
+            flash('Invalid date/time format. Please use DD/MM/YYYY for dates and HH:MM for times.', 'error')
     
     # Format dates for display in the form
-    formatted_start = event.start_date.strftime('%d/%m/%y %I:%M %p') if event.start_date else ''
-    formatted_end = event.end_date.strftime('%d/%m/%y %I:%M %p') if event.end_date else ''
+    formatted_start_date = event.start_date.strftime('%d/%m/%Y') if event.start_date else ''
+    formatted_start_time = event.start_date.strftime('%H:%M') if event.start_date else '12:00'
+    formatted_end_date = event.end_date.strftime('%d/%m/%Y') if event.end_date else ''
+    formatted_end_time = event.end_date.strftime('%H:%M') if event.end_date else '13:00'
+    
+    # Get all users for the joined event dropdown
+    from app.models.user import User
+    users = User.query.all()
     
     return render_template('calendar/edit.html', title='Edit Event', 
                          event=event, 
-                         formatted_start=formatted_start,
-                         formatted_end=formatted_end)
-
+                         formatted_start_date=formatted_start_date,
+                         formatted_start_time=formatted_start_time,
+                         formatted_end_date=formatted_end_date,
+                         formatted_end_time=formatted_end_time,
+                         users=users)
 @calendar_bp.route('/delete/<int:event_id>')
 @login_required
 def delete(event_id):
