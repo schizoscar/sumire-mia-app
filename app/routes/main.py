@@ -68,3 +68,77 @@ def home():
     if current_user.is_authenticated:
         return redirect(url_for('main.index'))
     return redirect(url_for('auth.login'))
+
+#================DEBUG=====================
+@main_bp.route('/debug-env')
+def debug_env():
+    """Debug endpoint to check environment variables (remove after debugging)."""
+    import os
+    import platform
+    
+    # Get all environment variables (but hide sensitive values)
+    env_vars = {}
+    for key in ['DATABASE_URL', 'FLASK_ENV', 'FLASK_DEBUG', 'APP_NAME', 'PYTHON_VERSION', 'VERCEL', 'VERCEL_ENV', 'VERCEL_URL']:
+        value = os.environ.get(key)
+        if value and key == 'DATABASE_URL' and len(value) > 20:
+            # Show first 20 chars of DATABASE_URL to verify it's the right one
+            env_vars[key] = value[:20] + '...'
+        else:
+            env_vars[key] = value
+    
+    # Also check if we can import and see the config
+    try:
+        from config import config
+        current_env = os.environ.get('FLASK_ENV', 'default')
+        db_uri = config[current_env].SQLALCHEMY_DATABASE_URI
+        if db_uri and len(db_uri) > 20:
+            db_uri_preview = db_uri[:20] + '...'
+        else:
+            db_uri_preview = db_uri
+    except Exception as e:
+        db_uri_preview = f"Error getting DB URI: {str(e)}"
+    
+    return {
+        'platform': platform.python_version(),
+        'environment_variables': env_vars,
+        'configured_db_uri': db_uri_preview,
+        'all_env_keys': list(os.environ.keys())[:20]  # First 20 keys to see what's available
+    }
+
+@main_bp.route('/health')
+def health():
+    """Check database connection."""
+    from app.extensions import db
+    from sqlalchemy import text
+    
+    try:
+        # Try to execute a simple query
+        with db.engine.connect() as conn:
+            result = conn.execute(text("SELECT 1"))
+            return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        return {"status": "unhealthy", "database": str(e)}, 500
+
+@main_bp.route('/db-check')
+def db_check():
+    """Check database connection."""
+    from app.extensions import db
+    from sqlalchemy import text
+    from app.models.user import User
+    
+    try:
+        # Test connection
+        with db.engine.connect() as conn:
+            result = conn.execute(text("SELECT 1"))
+        
+        # Count users
+        user_count = User.query.count()
+        
+        return {
+            "status": "connected",
+            "database": "Supabase PostgreSQL",
+            "user_count": user_count,
+            "connection_string_preview": db.engine.url.__repr__()[:50] + "..."
+        }
+    except Exception as e:
+        return {"status": "error", "message": str(e)}, 500
