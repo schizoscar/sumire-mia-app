@@ -77,7 +77,7 @@ def send_email(to_email, subject, html_content):
 def send_invitation_email(email, username, temporary_password):
     """Send invitation email to new user."""
     app_name = os.environ.get('APP_NAME', 'すみれ＆みあ')
-    app_url = os.environ.get('APP_URL', 'https://sumire-mia-app.onrender.com')
+    app_url = os.environ.get('APP_URL', 'https://sumire-mia-app.vercel.app/')
     login_url = f"{app_url}/auth/login"
     
     print(f"\n📨 Preparing invitation email for {username} ({email})")
@@ -135,7 +135,7 @@ def send_invitation_email(email, username, temporary_password):
 def send_password_reset_email(email, username, temporary_password):
     """Send password reset email."""
     app_name = os.environ.get('APP_NAME', 'すみれ＆みあ')
-    app_url = os.environ.get('APP_URL', 'https://sumire-mia-app.onrender.com')
+    app_url = os.environ.get('APP_URL', 'https://sumire-mia-app.vercel.app/')
     login_url = f"{app_url}/auth/login"
     
     print(f"\n🔐 Preparing password reset email for {username} ({email})")
