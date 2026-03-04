@@ -24,8 +24,8 @@ def add():
         joined_user_id = request.form.get('joined_user_id')
         
         # Get the combined datetime strings
-        start_datetime_str = request.form.get('start_date')  # This comes from hidden field
-        end_datetime_str = request.form.get('end_date')      # This comes from hidden field
+        start_datetime_str = request.form.get('start_date')
+        end_datetime_str = request.form.get('end_date')
         
         print(f"DEBUG - Start datetime: '{start_datetime_str}'")
         print(f"DEBUG - End datetime: '{end_datetime_str}'")
@@ -34,43 +34,39 @@ def add():
         
         try:
             # Parse datetime in format: DD/MM/YY HH:MM AM/PM
-            # Example: "02/03/26 02:30 PM"
             start_date = datetime.strptime(start_datetime_str, '%d/%m/%y %I:%M %p')
             end_date = datetime.strptime(end_datetime_str, '%d/%m/%y %I:%M %p')
             
             print(f"DEBUG - Parsed start: {start_date}")
             print(f"DEBUG - Parsed end: {end_date}")
             
-            # Create event
-            event = Event(
-                title=title,
-                description=description,
-                start_date=start_date,
-                end_date=end_date,
-                user_id=current_user.id,
-                event_type=event_type,
-                joined_user_id=joined_user_id if event_type == 'joined' and joined_user_id else None
-            )
+            # For joined events, we create ONE event with both user IDs
+            if event_type == 'joined' and joined_user_id:
+                # Create a single event with both users
+                event = Event(
+                    title=title,
+                    description=description,
+                    start_date=start_date,
+                    end_date=end_date,
+                    user_id=current_user.id,  # Primary owner
+                    event_type='joined',
+                    joined_user_id=int(joined_user_id)  # Secondary user
+                )
+                print(f"DEBUG - Creating SHARED joined event for users: {current_user.id} and {joined_user_id}")
+            else:
+                # Solo event
+                event = Event(
+                    title=title,
+                    description=description,
+                    start_date=start_date,
+                    end_date=end_date,
+                    user_id=current_user.id,
+                    event_type='solo',
+                    joined_user_id=None
+                )
+                print(f"DEBUG - Creating solo event for user: {current_user.id}")
             
             db.session.add(event)
-            print(f"DEBUG - Event added to session: {event}")
-            
-            # If joined event, create a mirror event for the other user
-            if event_type == 'joined' and joined_user_id:
-                joined_user = User.query.get(int(joined_user_id))
-                if joined_user:
-                    joined_event = Event(
-                        title=f"{title} (with {current_user.username})",
-                        description=description,
-                        start_date=start_date,
-                        end_date=end_date,
-                        user_id=int(joined_user_id),
-                        event_type='joined',
-                        joined_user_id=current_user.id
-                    )
-                    db.session.add(joined_event)
-                    print(f"DEBUG - Joined event created for user: {joined_user.username}")
-            
             db.session.commit()
             print(f"DEBUG - Database committed successfully")
             
@@ -95,22 +91,20 @@ def add():
 @calendar_bp.route('/edit/<int:event_id>', methods=['GET', 'POST'])
 @login_required
 def edit(event_id):
-    """Edit event - only owner can edit."""
+    """Edit event - both users can edit joined events."""
     event = Event.query.get_or_404(event_id)
     
-    # Check if user owns this event
-    if event.user_id != current_user.id:
-        flash('You can only edit your own events.', 'error')
+    # Check if user can edit this event
+    if not event.can_edit(current_user.id):
+        flash('You do not have permission to edit this event.', 'error')
         return redirect(url_for('calendar.index'))
     
     if request.method == 'POST':
         event.title = request.form.get('title')
         event.description = request.form.get('description')
-        event.event_type = request.form.get('event_type', 'solo')
         
-        # Handle joined event user
-        joined_user_id = request.form.get('joined_user_id')
-        event.joined_user_id = int(joined_user_id) if joined_user_id and event.event_type == 'joined' else None
+        # Don't allow changing event type or joined user on edit
+        # to keep things simple
         
         # Get the date and time strings
         start_date_str = request.form.get('start_date')
@@ -143,7 +137,7 @@ def edit(event_id):
     formatted_end_date = event.end_date.strftime('%d/%m/%Y') if event.end_date else ''
     formatted_end_time = event.end_date.strftime('%H:%M') if event.end_date else '13:00'
     
-    # Get all users for the joined event dropdown
+    # Get all users for display (optional)
     from app.models.user import User
     users = User.query.all()
     
@@ -154,15 +148,16 @@ def edit(event_id):
                          formatted_end_date=formatted_end_date,
                          formatted_end_time=formatted_end_time,
                          users=users)
+
 @calendar_bp.route('/delete/<int:event_id>')
 @login_required
 def delete(event_id):
-    """Delete event - only owner can delete."""
+    """Delete event - both users can delete joined events."""
     event = Event.query.get_or_404(event_id)
     
-    # Check if user owns this event
-    if event.user_id != current_user.id:
-        flash('You can only delete your own events.', 'error')
+    # Check if user can delete this event
+    if not event.can_edit(current_user.id):  # Using same permission as edit
+        flash('You do not have permission to delete this event.', 'error')
         return redirect(url_for('calendar.index'))
     
     db.session.delete(event)
@@ -174,7 +169,7 @@ def delete(event_id):
 @login_required
 def api_events():
     """API endpoint for calendar events - show all users' events."""
-    # Get ALL events, not just current user's
+    # Get ALL events
     events = Event.query.all()
     events_list = []
     
@@ -185,14 +180,17 @@ def api_events():
             joined_user = User.query.get(event.joined_user_id)
             joined_username = joined_user.username if joined_user else None
         
-        # Get the event owner's color scheme and username
+        # Get the event owner's color scheme and username - use event_owner (from backref)
         owner = event.event_owner
         color_scheme = owner.color_scheme if owner else 'purple'
         owner_username = owner.username if owner else 'Unknown'
         
-        # Determine if current user is the owner
-        is_owner = (event.user_id == current_user.id)
-            
+        # For joined events, BOTH users can edit
+        if event.event_type == 'joined':
+            can_edit = (event.user_id == current_user.id or event.joined_user_id == current_user.id)
+        else:
+            can_edit = (event.user_id == current_user.id)
+        
         event_dict = {
             'id': event.id,
             'title': event.title,
@@ -207,7 +205,8 @@ def api_events():
             'color_scheme': color_scheme,
             'owner_id': event.user_id,
             'owner_username': owner_username,
-            'is_owner': is_owner  # Add this for frontend to know if user can edit/delete
+            'can_edit': can_edit,
+            'is_owner': (event.user_id == current_user.id)  # Keep for backward compatibility
         }
         
         # Set color based on event type
@@ -230,8 +229,8 @@ def api_events():
                 event_dict['borderColor'] = '#f9a95d'
             event_dict['textColor'] = '#4a4a4a'
         
-        # If not owner, slightly fade the event
-        if not is_owner:
+        # If can't edit, slightly fade the event
+        if not can_edit:
             event_dict['className'] += ' other-user-event'
         
         events_list.append(event_dict)

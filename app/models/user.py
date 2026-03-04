@@ -23,8 +23,10 @@ class User(UserMixin, db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     
-    # Relationships with unique backref names
+    # Relationships
     events = db.relationship('Event', foreign_keys='Event.user_id', backref='event_owner', lazy=True, cascade='all, delete-orphan')
+    # Add this if you want to access events where user is the joined user
+    joined_events = db.relationship('Event', foreign_keys='Event.joined_user_id', backref='joined_user', lazy=True)
     tasks = db.relationship('Task', backref='task_owner', lazy=True, cascade='all, delete-orphan')
     reminders = db.relationship('Reminder', backref='reminder_owner', lazy=True, cascade='all, delete-orphan')
     

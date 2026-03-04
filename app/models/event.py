@@ -15,21 +15,24 @@ class Event(db.Model):
     all_day = db.Column(db.Boolean, default=False)
     
     # Event type
-    event_type = db.Column(db.String(20), default='solo')
+    event_type = db.Column(db.String(20), default='solo')  # 'solo' or 'joined'
     
-    # Foreign keys
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    joined_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)
+    # For joined events, both users are stored here
+    # Primary owner is the creator, secondary is the joined user
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)  # Primary owner
+    joined_user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=True)  # Secondary user
+    
+    # Both users can edit/delete if it's a joined event
     
     # Timestamps
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     
-    # No back_populates - let the User model handle the relationship
+    # Relationships - use the existing backref from User model
+    # The User model already has 'events' relationship with backref='event_owner'
     
     def to_dict(self):
         """Convert to dictionary for JSON responses."""
-        # Get the user to access color scheme
         from app.models.user import User
         user = User.query.get(self.user_id)
         
@@ -41,10 +44,17 @@ class Event(db.Model):
             'end': self.end_date.isoformat(),
             'allDay': self.all_day,
             'user_id': self.user_id,
-            'event_type': self.event_type,
             'joined_user_id': self.joined_user_id,
+            'event_type': self.event_type,
             'color': user.color_scheme if user else 'purple'
         }
+    
+    def can_edit(self, user_id):
+        """Check if a user can edit this event."""
+        if self.event_type == 'solo':
+            return self.user_id == user_id
+        else:  # joined event
+            return self.user_id == user_id or self.joined_user_id == user_id
     
     def __repr__(self):
         return f'<Event {self.title}>'
