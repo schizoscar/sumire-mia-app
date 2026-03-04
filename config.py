@@ -9,13 +9,19 @@ class Config:
     SECRET_KEY = os.environ.get('SECRET_KEY', 'dev-key-change-in-production')
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
-    # Database - handle Render's PostgreSQL URL format
-    database_url = os.environ.get('DATABASE_URL')
-    if database_url and database_url.startswith('postgres://'):
-        # Render uses postgres:// but SQLAlchemy needs postgresql://
-        database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    # Database - handle both Render and Vercel/Neon formats
+    # Vercel/Neon might use POSTGRES_URL, Render uses DATABASE_URL
+    database_url = os.environ.get('DATABASE_URL') or os.environ.get('POSTGRES_URL')
     
-    SQLALCHEMY_DATABASE_URI = database_url or 'postgresql://localhost/sumire_mia_db'
+    if database_url:
+        # Handle both postgres:// and postgresql://
+        if database_url.startswith('postgres://'):
+            database_url = database_url.replace('postgres://', 'postgresql://', 1)
+    else:
+        # Fallback for local development
+        database_url = 'postgresql://localhost/sumire_mia_db'
+    
+    SQLALCHEMY_DATABASE_URI = database_url
     
     # App settings
     APP_NAME = os.environ.get('APP_NAME', 'すみれ＆みあ')
