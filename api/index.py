@@ -15,10 +15,8 @@ os.environ['FLASK_ENV'] = 'production'
 from app import create_app
 app = create_app('production')
 
-# Vercel serverless handler
+handler = app  # Vercel expects a variable named 'app' or 'handler'
+
+# Alternative: if you want to keep the handler function
 def handler(request):
     return app(request)
-
-# For local development
-if __name__ == '__main__':
-    app.run()
