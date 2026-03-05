@@ -143,41 +143,41 @@
         const ownerUsername = event.extendedProps.owner_username || 'Unknown';
         const joinedUsername = event.extendedProps.joined_username || 'another user';
 
+        // Use formatted dates from the API
+        const startDisplay = event.extendedProps.formatted_start;
+        const endDisplay = event.extendedProps.formatted_end;
+
+        console.log('Event details:', {
+            title: event.title,
+            start: event.start,
+            end: event.end,
+            formatted_start: startDisplay,
+            formatted_end: endDisplay
+        });
+
         const modalHtml = `
-            <div class="modal fade" id="eventModal" tabindex="-1">
-                <div class="modal-dialog modal-dialog-centered">
-                    <div class="modal-content" style="border-radius: 24px; background: white;">
-                        <div class="modal-header" style="border-bottom: 2px solid var(--pastel-lavender);">
-                            <h5 class="modal-title" style="color: var(--charcoal);">${event.title}</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                        </div>
-                        <div class="modal-body" style="padding: 20px;">
-                            ${event.extendedProps.description ? `<p style="color: var(--warm-gray); margin-bottom: 15px;">${event.extendedProps.description}</p>` : ''}
-                            <p style="color: var(--charcoal); margin-bottom: 5px;">
-                                <i class="bi bi-person me-2" style="color: var(--pastel-lavender);"></i>
-                                Created by: ${ownerUsername}
-                            </p>
-                            <p style="color: var(--charcoal); margin-bottom: 5px;">
-                                <i class="bi bi-calendar me-2" style="color: var(--pastel-lavender);"></i>
-                                Start: ${new Date(event.start).toLocaleString('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        })}
-                            </p>
-                            <p style="color: var(--charcoal); margin-bottom: 5px;">
-                                <i class="bi bi-calendar me-2" style="color: var(--peachy-pink);"></i>
-                                End: ${new Date(event.end).toLocaleString('en-GB', {
-            day: '2-digit',
-            month: '2-digit',
-            year: '2-digit',
-            hour: '2-digit',
-            minute: '2-digit'
-        })}
-                            </p>
-                            ${event.extendedProps.event_type === 'joined' ?
+        <div class="modal fade" id="eventModal" tabindex="-1">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content" style="border-radius: 24px; background: white;">
+                    <div class="modal-header" style="border-bottom: 2px solid var(--pastel-lavender);">
+                        <h5 class="modal-title" style="color: var(--charcoal);">${event.title}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 20px;">
+                        ${event.extendedProps.description ? `<p style="color: var(--warm-gray); margin-bottom: 15px;">${event.extendedProps.description}</p>` : ''}
+                        <p style="color: var(--charcoal); margin-bottom: 5px;">
+                            <i class="bi bi-person me-2" style="color: var(--pastel-lavender);"></i>
+                            Created by: ${ownerUsername}
+                        </p>
+                        <p style="color: var(--charcoal); margin-bottom: 5px;">
+                            <i class="bi bi-calendar me-2" style="color: var(--pastel-lavender);"></i>
+                            Start: ${startDisplay}
+                        </p>
+                        <p style="color: var(--charcoal); margin-bottom: 5px;">
+                            <i class="bi bi-calendar me-2" style="color: var(--peachy-pink);"></i>
+                            End: ${endDisplay}
+                        </p>
+                        ${event.extendedProps.event_type === 'joined' ?
                 `<p style="color: var(--charcoal); margin-top: 10px;">
                                     <i class="bi bi-person-fill me-2" style="color: var(--joined-red);"></i>
                                     Joined event with ${joinedUsername}
@@ -187,24 +187,24 @@
                                     Solo event
                                 </p>`
             }
-                        </div>
-                        <div class="modal-footer" style="border-top: 2px solid var(--pastel-lavender);">
-                            ${canEdit ? `
-                                <a href="/calendar/edit/${event.id}" class="btn btn-primary">
-                                    <i class="bi bi-pencil"></i> edit
-                                </a>
-                                <button type="button" class="btn btn-danger" onclick="confirmDelete(${event.id})">
-                                    <i class="bi bi-trash"></i> delete
-                                </button>
-                            ` : ''}
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                close
+                    </div>
+                    <div class="modal-footer" style="border-top: 2px solid var(--pastel-lavender);">
+                        ${canEdit ? `
+                            <a href="/calendar/edit/${event.id}" class="btn btn-primary">
+                                <i class="bi bi-pencil"></i> edit
+                            </a>
+                            <button type="button" class="btn btn-danger" onclick="confirmDelete(${event.id})">
+                                <i class="bi bi-trash"></i> delete
                             </button>
-                        </div>
+                        ` : ''}
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            close
+                        </button>
                     </div>
                 </div>
             </div>
-        `;
+        </div>
+    `;
 
         const existingModal = document.getElementById('eventModal');
         if (existingModal) {
