@@ -194,9 +194,6 @@ def api_events():
         formatted_start = event.start_date.strftime('%d/%m/%y %I:%M %p') if event.start_date else ''
         formatted_end = event.end_date.strftime('%d/%m/%y %I:%M %p') if event.end_date else ''
         
-        print(f"API DEBUG - Event {event.id}: Start raw: {event.start_date}, Formatted: {formatted_start}")
-        print(f"API DEBUG - Event {event.id}: End raw: {event.end_date}, Formatted: {formatted_end}")
-        
         event_dict = {
             'id': event.id,
             'title': event.title,

@@ -100,6 +100,20 @@
                 console.log('Event mounted:', info.event.title, 'Owner:', info.event.extendedProps.owner_username, 'Can edit:', info.event.extendedProps.can_edit);
             },
 
+            // Add day cell styling for past dates
+            dayCellDidMount: function (info) {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+
+                const cellDate = info.date;
+                cellDate.setHours(0, 0, 0, 0);
+
+                // If the cell date is before today, add a 'past-day' class
+                if (cellDate < today) {
+                    info.el.classList.add('past-day');
+                }
+            },
+
             buttonText: {
                 today: 'today',
                 month: 'month',
@@ -617,6 +631,49 @@
         rgba(255, 255, 255, 0.4) 8px,
         rgba(255, 255, 255, 0.4) 16px
     ) !important;
+}
+
+/* Past day styling - greyed out like completed tasks */
+.fc-daygrid-day.past-day {
+    background: #f8f9fa !important;
+    opacity: 0.8;
+}
+
+.fc-daygrid-day.past-day .fc-daygrid-day-number {
+    color: #6c757d !important;
+}
+
+.fc-daygrid-day.past-day .fc-daygrid-day-events {
+    opacity: 0.7;
+}
+
+.fc-daygrid-day.past-day .fc-daygrid-day-frame {
+    background: #f8f9fa !important;
+}
+
+/* Make sure the day numbers in past days are greyed out */
+.fc-daygrid-day.past-day .fc-daygrid-day-top {
+    color: #6c757d;
+}
+
+/* For the day headers, we don't want to grey them out */
+.fc-day-header {
+    background: rgba(230, 230, 250, 0.3) !important;
+}
+
+/* Ensure hover effects still work on past days */
+.fc-daygrid-day.past-day:hover {
+    background: #f0f0f0 !important;
+    opacity: 0.9;
+}
+
+/* If you want events in past days to also be slightly greyed */
+.fc-daygrid-day.past-day .fc-event {
+    opacity: 0.7;
+}
+
+.fc-daygrid-day.past-day .fc-event:hover {
+    opacity: 1;
 }
 </style>
 {% endblock %}
