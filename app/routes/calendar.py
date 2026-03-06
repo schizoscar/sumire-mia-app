@@ -101,12 +101,24 @@ def edit(event_id):
         event.title = request.form.get('title')
         event.description = request.form.get('description')
         
-        # Get the date and time strings - Note: form uses start_datetime and end_datetime
+        # IMPORTANT: Update event type and joined user
+        event.event_type = request.form.get('event_type', 'solo')
+        
+        # Handle joined user
+        joined_user_id = request.form.get('joined_user_id')
+        if event.event_type == 'joined' and joined_user_id:
+            event.joined_user_id = int(joined_user_id)
+        else:
+            event.joined_user_id = None
+        
+        # Get the datetime strings
         start_datetime_str = request.form.get('start_datetime')
         end_datetime_str = request.form.get('end_datetime')
         
         print(f"EDIT DEBUG - Start datetime from form: '{start_datetime_str}'")
         print(f"EDIT DEBUG - End datetime from form: '{end_datetime_str}'")
+        print(f"EDIT DEBUG - Event type: {event.event_type}")
+        print(f"EDIT DEBUG - Joined user: {event.joined_user_id}")
         
         try:
             # Parse datetime in format: DD/MM/YY HH:MM AM/PM
